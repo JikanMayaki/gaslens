@@ -1,3 +1,11 @@
+export interface Token {
+  address: string;
+  symbol: string;
+  name: string;
+  decimals: number;
+  logoUrl: string;
+}
+
 export interface Transaction {
   hash: string;
   from: string;
