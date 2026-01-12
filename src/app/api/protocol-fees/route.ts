@@ -40,6 +40,18 @@ export async function GET(request: NextRequest) {
         baseFeeBps: 4, // 0.04%
         gasEstimate: 120000,
       },
+      {
+        protocolId: 'chainflip',
+        protocolName: 'Chainflip',
+        baseFeeBps: 10, // 0.1%
+        gasEstimate: 135000,
+      },
+      {
+        protocolId: 'relay',
+        protocolName: 'Relay',
+        baseFeeBps: 15, // 0.15%
+        gasEstimate: 130000,
+      },
     ];
 
     const amount = parseFloat(amountIn);

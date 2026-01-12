@@ -37,11 +37,36 @@ export const CURVE: Protocol = {
   active: true
 };
 
+export const CHAINFLIP: Protocol = {
+  id: 'chainflip',
+  name: 'Chainflip',
+  type: 'dex',
+  chain: ETHEREUM.name,
+  logoUrl: '/protocols/chainflip.png',
+  website: 'https://chainflip.io',
+  description: 'Cross-chain DEX with automated market making',
+  audited: true,
+  active: true
+};
+
+export const RELAY: Protocol = {
+  id: 'relay',
+  name: 'Relay',
+  type: 'dex',
+  chain: ETHEREUM.name,
+  logoUrl: '/protocols/relay.png',
+  website: 'https://relay.link',
+  description: 'Fast and efficient cross-chain token swaps',
+  audited: true,
+  active: true
+};
+
 export const SUPPORTED_PROTOCOLS: Protocol[] = [
   UNISWAP,
   SUSHISWAP,
-  CURVE
-  // Add more protocols as we integrate them
+  CURVE,
+  CHAINFLIP,
+  RELAY
 ];
 
 // Alias for easier imports
