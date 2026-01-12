@@ -1,9 +1,18 @@
+export interface Chain {
+  id: number;
+  name: string;
+  nativeCurrency: string;
+  rpcUrl: string;
+  explorerUrl: string;
+  logoUrl: string;
+}
+
 export interface Protocol {
   id: string;
   name: string;
   type: 'dex' | 'lending' | 'yield';
   chain: string;
-  logo: string;
+  logoUrl: string;
   website: string;
   description: string;
   audited: boolean;
