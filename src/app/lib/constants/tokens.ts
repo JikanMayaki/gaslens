@@ -56,3 +56,6 @@ export const getTokenBySymbol = (symbol: string): Token | undefined => {
     token => token.symbol.toLowerCase() === symbol.toLowerCase()
   );
 };
+
+// Alias for easier imports
+export const TOKENS = POPULAR_TOKENS;

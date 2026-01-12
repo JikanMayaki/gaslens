@@ -44,6 +44,9 @@ export const SUPPORTED_PROTOCOLS: Protocol[] = [
   // Add more protocols as we integrate them
 ];
 
+// Alias for easier imports
+export const PROTOCOLS = SUPPORTED_PROTOCOLS;
+
 export const getProtocolById = (id: string): Protocol | undefined => {
   return SUPPORTED_PROTOCOLS.find(protocol => protocol.id === id);
 };
