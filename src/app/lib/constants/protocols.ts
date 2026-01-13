@@ -1,5 +1,5 @@
 import { Protocol } from '@/types/protocol';
-import { ETHEREUM } from './chains';
+import { ETHEREUM, POLYGON, ARBITRUM, OPTIMISM, BASE } from './chains';
 
 export const UNISWAP: Protocol = {
   id: 'uniswap-v3',
@@ -10,7 +10,10 @@ export const UNISWAP: Protocol = {
   website: 'https://uniswap.org',
   description: 'Leading decentralized exchange with concentrated liquidity',
   audited: true,
-  active: true
+  active: true,
+  mevProtection: false,
+  supportedChains: [ETHEREUM.name, POLYGON.name, ARBITRUM.name, OPTIMISM.name, BASE.name],
+  avgGasSavings: 8
 };
 
 export const SUSHISWAP: Protocol = {
@@ -22,7 +25,10 @@ export const SUSHISWAP: Protocol = {
   website: 'https://sushi.com',
   description: 'Community-driven DEX and DeFi platform',
   audited: true,
-  active: true
+  active: true,
+  mevProtection: false,
+  supportedChains: [ETHEREUM.name, POLYGON.name, ARBITRUM.name, BASE.name],
+  avgGasSavings: 7
 };
 
 export const CURVE: Protocol = {
@@ -34,7 +40,10 @@ export const CURVE: Protocol = {
   website: 'https://curve.fi',
   description: 'Stablecoin-focused automated market maker',
   audited: true,
-  active: true
+  active: true,
+  mevProtection: true,
+  supportedChains: [ETHEREUM.name, POLYGON.name, ARBITRUM.name, OPTIMISM.name],
+  avgGasSavings: 12
 };
 
 export const CHAINFLIP: Protocol = {
@@ -46,7 +55,10 @@ export const CHAINFLIP: Protocol = {
   website: 'https://chainflip.io',
   description: 'Cross-chain DEX with automated market making',
   audited: true,
-  active: true
+  active: true,
+  mevProtection: true,
+  supportedChains: [ETHEREUM.name, POLYGON.name, ARBITRUM.name],
+  avgGasSavings: 15
 };
 
 export const RELAY: Protocol = {
@@ -58,7 +70,10 @@ export const RELAY: Protocol = {
   website: 'https://relay.link',
   description: 'Fast and efficient cross-chain token swaps',
   audited: true,
-  active: true
+  active: true,
+  mevProtection: true,
+  supportedChains: [ETHEREUM.name, BASE.name, OPTIMISM.name],
+  avgGasSavings: 10
 };
 
 export const SUPPORTED_PROTOCOLS: Protocol[] = [

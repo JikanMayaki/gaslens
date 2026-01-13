@@ -17,6 +17,9 @@ export interface Protocol {
   description: string;
   audited: boolean;
   active: boolean;
+  mevProtection?: boolean; // Does protocol offer MEV protection?
+  supportedChains?: string[]; // Chains this protocol supports
+  avgGasSavings?: number; // Average gas savings percentage
 }
 
 export interface ProtocolFee {
