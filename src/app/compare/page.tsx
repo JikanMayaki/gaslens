@@ -1,16 +1,16 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { ArrowDown, RefreshCw, Zap, AlertCircle } from 'lucide-react';
+import { ArrowDown, RefreshCw, AlertCircle } from 'lucide-react';
 import { Card } from '../components/ui/Card';
-import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
+import { PathCard } from '../components/PathCard';
 import { TOKENS } from '../lib/constants/tokens';
-import { formatCurrency, formatGwei } from '../lib/constants/api/utils/formatting';
+import { formatGwei } from '../lib/constants/api/utils/formatting';
 import { useGasPrice } from '../lib/hooks/useGasPrice';
 import { useProtocolFees } from '../lib/hooks/useProtocolFees';
 import { useEthPrice } from '../lib/hooks/useTokenPrices';
-import { estimateTransactionTime } from '../lib/services/gasPrice';
+import { buildSwapPaths } from '../lib/services/pathBuilder';
 
 export default function ComparePage() {
   const [tokenIn, setTokenIn] = useState('ETH');
@@ -47,30 +47,13 @@ export default function ComparePage() {
     await refetchFees();
   };
 
-  // Calculate savings and add time estimates
-  const results = useMemo(() => {
+  // Build swap paths from protocol fees
+  const paths = useMemo(() => {
     if (fees.length === 0) return [];
+    return buildSwapPaths(fees, tokenIn, tokenOut, amount, ethPrice || 2000);
+  }, [fees, tokenIn, tokenOut, amount, ethPrice]);
 
-    const sorted = [...fees].sort((a, b) => a.totalFeeUsd - b.totalFeeUsd);
-    const cheapest = sorted[0];
-
-    return sorted.map((fee) => {
-      const gasCostEth = (fee.gasEstimate * currentGasPrice) / 1e9;
-      const protocolFeeEth = (parseFloat(amount) * fee.baseFeeBps) / 10000;
-
-      return {
-        protocol: fee.protocolName,
-        gasFee: gasCostEth,
-        protocolFee: protocolFeeEth,
-        total: gasCostEth + protocolFeeEth,
-        totalUsd: fee.totalFeeUsd,
-        savings: cheapest.totalFeeUsd - fee.totalFeeUsd,
-        savingsPercent: ((cheapest.totalFeeUsd - fee.totalFeeUsd) / cheapest.totalFeeUsd) * 100,
-        time: gasPrice ? estimateTransactionTime(currentGasPrice, gasPrice) : 30,
-        isBest: fee.protocolId === cheapest.protocolId,
-      };
-    });
-  }, [fees, gasPrice, currentGasPrice, amount]);
+  const bestPath = paths.find((p) => p.isBest);
 
   return (
     <div className="container mx-auto px-6 py-12">
@@ -78,10 +61,10 @@ export default function ComparePage() {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-4xl font-bold mb-2 text-zinc-900 dark:text-zinc-50">
-              Compare Gas Fees
+              Find the Best Swap Route
             </h1>
             <p className="text-lg text-zinc-600 dark:text-zinc-400">
-              Find the cheapest way to swap your tokens
+              Compare paths across protocols and save money
             </p>
           </div>
           {gasPrice && (
@@ -103,7 +86,10 @@ export default function ComparePage() {
 
         {/* Gas Price Alert */}
         {gasError && (
-          <Card padding="md" className="mb-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800">
+          <Card
+            padding="md"
+            className="mb-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800"
+          >
             <div className="flex items-center gap-2 text-yellow-800 dark:text-yellow-200">
               <AlertCircle className="w-4 h-4" />
               <p className="text-sm">Using mock data. {gasError}</p>
@@ -124,7 +110,7 @@ export default function ComparePage() {
                   onChange={(e) => setTokenIn(e.target.value)}
                   className="px-4 py-3 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-50 font-medium min-w-[140px]"
                 >
-                  {Object.values(TOKENS).map((token) => (
+                  {TOKENS.map((token) => (
                     <option key={token.symbol} value={token.symbol}>
                       {token.symbol}
                     </option>
@@ -158,7 +144,7 @@ export default function ComparePage() {
                 onChange={(e) => setTokenOut(e.target.value)}
                 className="w-full px-4 py-3 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-50 font-medium"
               >
-                {Object.values(TOKENS).map((token) => (
+                {TOKENS.map((token) => (
                   <option key={token.symbol} value={token.symbol}>
                     {token.symbol}
                   </option>
@@ -166,114 +152,77 @@ export default function ComparePage() {
               </select>
             </div>
 
-            <Button
-              variant="primary"
-              size="lg"
+            <button
               onClick={handleCompare}
-              disabled={feesLoading || gasLoading}
-              className="w-full"
+              disabled={!amount || parseFloat(amount) <= 0}
+              className="w-full px-6 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-indigo-700 disabled:from-gray-400 disabled:to-gray-400 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg"
             >
-              {feesLoading ? (
-                <span className="flex items-center gap-2">
-                  <RefreshCw className="w-4 h-4 animate-spin" />
-                  Comparing...
-                </span>
-              ) : (
-                'Compare Protocols'
-              )}
-            </Button>
+              {feesLoading ? 'Finding Best Routes...' : 'Compare Routes'}
+            </button>
           </div>
         </Card>
 
-        {/* Results */}
-        {results.length > 0 && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">
-                Fee Comparison
-              </h2>
-              <button
-                onClick={refetchFees}
-                className="text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
-              >
-                <RefreshCw className="w-3 h-3" />
-                Refresh
-              </button>
+        {/* Best Path Highlight */}
+        {bestPath && (
+          <Card padding="md" className="mb-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
+            <div className="text-center">
+              <p className="text-sm text-green-800 dark:text-green-200 mb-1">Best Route Found!</p>
+              <p className="text-2xl font-bold text-green-900 dark:text-green-100">
+                Save ${bestPath.savingsUsd?.toFixed(2)} with {bestPath.action.provider}
+              </p>
+              <p className="text-sm text-green-700 dark:text-green-300 mt-1">
+                {bestPath.savingsPercent?.toFixed(1)}% cheaper than the most expensive option
+              </p>
             </div>
-
-            {results.map((result) => (
-              <Card key={result.protocol} padding="lg" hover>
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
-                        {result.protocol}
-                      </h3>
-                      {result.isBest && (
-                        <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 flex items-center gap-1">
-                          <Zap className="w-3 h-3" />
-                          Best Deal
-                        </span>
-                      )}
-                      {result.savings < 0 && (
-                        <span className="px-2 py-1 text-xs font-medium rounded-full bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300">
-                          +{formatCurrency(Math.abs(result.savings))} more
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="grid grid-cols-3 gap-4 text-sm">
-                      <div>
-                        <p className="text-zinc-500 dark:text-zinc-400">Gas Fee</p>
-                        <p className="font-medium text-zinc-900 dark:text-zinc-50">
-                          {result.gasFee.toFixed(6)} ETH
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-zinc-500 dark:text-zinc-400">Protocol Fee</p>
-                        <p className="font-medium text-zinc-900 dark:text-zinc-50">
-                          {result.protocolFee.toFixed(6)} ETH
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-zinc-500 dark:text-zinc-400">Est. Time</p>
-                        <p className="font-medium text-zinc-900 dark:text-zinc-50">
-                          ~{result.time}s
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="text-right ml-6">
-                    <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-1">
-                      Total Cost
-                    </p>
-                    <p className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">
-                      {formatCurrency(result.totalUsd)}
-                    </p>
-                    <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                      {result.total.toFixed(6)} ETH
-                    </p>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-        )}
-
-        {compareEnabled && results.length === 0 && !feesLoading && (
-          <Card padding="lg" className="text-center">
-            <p className="text-zinc-600 dark:text-zinc-400">
-              No results found. Try adjusting your search parameters.
-            </p>
           </Card>
         )}
 
-        <Card padding="md" className="mt-8">
-          <p className="text-sm text-zinc-600 dark:text-zinc-400">
-            Gas prices are estimates based on current network conditions and may vary. Always verify the final transaction details before confirming.
-          </p>
-        </Card>
+        {/* Results */}
+        {compareEnabled && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">
+                Available Routes ({paths.length})
+              </h2>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                Sorted by total cost (cheapest first)
+              </p>
+            </div>
+
+            {feesLoading ? (
+              <Card padding="lg">
+                <div className="text-center py-12">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                  <p className="text-zinc-600 dark:text-zinc-400">
+                    Analyzing routes across protocols...
+                  </p>
+                </div>
+              </Card>
+            ) : feesError ? (
+              <Card padding="lg" className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+                <div className="flex items-center gap-2 text-red-800 dark:text-red-200">
+                  <AlertCircle className="w-5 h-5" />
+                  <div>
+                    <p className="font-semibold">Error loading routes</p>
+                    <p className="text-sm">{feesError}</p>
+                  </div>
+                </div>
+              </Card>
+            ) : paths.length > 0 ? (
+              <div className="space-y-4">
+                {paths.map((path, index) => (
+                  <PathCard key={path.id} path={path} rank={index + 1} />
+                ))}
+              </div>
+            ) : (
+              <Card padding="lg">
+                <div className="text-center py-12 text-zinc-600 dark:text-zinc-400">
+                  <p>Click "Compare Routes" to see available swap paths</p>
+                </div>
+              </Card>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
