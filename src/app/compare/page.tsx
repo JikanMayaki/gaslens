@@ -56,33 +56,38 @@ export default function ComparePage() {
   const bestPath = paths.find((p) => p.isBest);
 
   return (
-    <div className="container mx-auto px-6 py-12">
-      <div className="max-w-5xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-4xl font-bold mb-2 text-zinc-900 dark:text-zinc-50">
-              Find the Best Swap Route
-            </h1>
-            <p className="text-lg text-zinc-600 dark:text-zinc-400">
-              Compare paths across protocols and save money
-            </p>
-          </div>
-          {gasPrice && (
-            <div className="text-right">
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">Current Gas Price</p>
-              <p className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">
-                {formatGwei(currentGasPrice)}
+    <div className="min-h-screen bg-gradient-to-b from-white via-blue-50/20 to-white dark:from-zinc-950 dark:via-blue-950/10 dark:to-zinc-950">
+      <div className="container mx-auto px-6 py-12">
+        <div className="max-w-6xl mx-auto">
+          {/* Header */}
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-10 gap-6">
+            <div>
+              <h1 className="text-4xl md:text-5xl font-black mb-3 text-zinc-900 dark:text-zinc-50 tracking-tight">
+                Find the <span className="bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 bg-clip-text text-transparent">Best Route</span>
+              </h1>
+              <p className="text-lg md:text-xl text-zinc-600 dark:text-zinc-400">
+                Compare 7+ protocols · Save 30-70% · Get results in 2 seconds
               </p>
-              <button
-                onClick={refetchGas}
-                className="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 mt-1"
-              >
-                <RefreshCw className="w-3 h-3" />
-                Refresh
-              </button>
             </div>
-          )}
-        </div>
+            {gasPrice && (
+              <div className="flex items-center gap-3 bg-white dark:bg-zinc-900 rounded-xl p-4 shadow-lg border border-zinc-200 dark:border-zinc-800">
+                <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                <div>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400 font-medium">Live Gas Price</p>
+                  <p className="text-2xl font-black text-zinc-900 dark:text-zinc-50 tabular-nums">
+                    {formatGwei(currentGasPrice)}
+                  </p>
+                </div>
+                <button
+                  onClick={refetchGas}
+                  className="ml-2 p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/30 rounded-lg transition-colors"
+                  title="Refresh gas price"
+                >
+                  <RefreshCw className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+          </div>
 
         {/* Gas Price Alert */}
         {gasError && (
@@ -98,17 +103,52 @@ export default function ComparePage() {
         )}
 
         {/* Swap Input */}
-        <Card padding="lg" className="mb-8">
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300">
-                From
-              </label>
-              <div className="flex gap-3">
+        <Card padding="none" className="mb-8 overflow-hidden border-2 border-zinc-200 dark:border-zinc-800 shadow-xl">
+          <div className="bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-zinc-900 dark:via-zinc-900 dark:to-zinc-900 p-8">
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-bold mb-3 text-zinc-900 dark:text-zinc-50">
+                  You Send
+                </label>
+                <div className="flex gap-3">
+                  <select
+                    value={tokenIn}
+                    onChange={(e) => setTokenIn(e.target.value)}
+                    className="px-4 py-4 rounded-xl border-2 border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-50 font-bold min-w-[140px] hover:border-blue-500 dark:hover:border-blue-500 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    {TOKENS.map((token) => (
+                      <option key={token.symbol} value={token.symbol}>
+                        {token.symbol}
+                      </option>
+                    ))}
+                  </select>
+                  <Input
+                    type="number"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    placeholder="0.0"
+                    className="flex-1 px-4 py-4 rounded-xl border-2 border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-50 font-bold text-lg hover:border-blue-500 dark:hover:border-blue-500 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-center">
+                <button
+                  onClick={handleSwapTokens}
+                  className="p-3 rounded-xl border-2 border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-blue-50 dark:hover:bg-blue-950/30 hover:border-blue-500 dark:hover:border-blue-500 transition-all shadow-md hover:shadow-lg hover:rotate-180 duration-300"
+                >
+                  <ArrowDown className="w-6 h-6 text-zinc-600 dark:text-zinc-400" />
+                </button>
+              </div>
+
+              <div>
+                <label className="block text-sm font-bold mb-3 text-zinc-900 dark:text-zinc-50">
+                  You Receive
+                </label>
                 <select
-                  value={tokenIn}
-                  onChange={(e) => setTokenIn(e.target.value)}
-                  className="px-4 py-3 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-50 font-medium min-w-[140px]"
+                  value={tokenOut}
+                  onChange={(e) => setTokenOut(e.target.value)}
+                  className="w-full px-4 py-4 rounded-xl border-2 border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-50 font-bold hover:border-blue-500 dark:hover:border-blue-500 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   {TOKENS.map((token) => (
                     <option key={token.symbol} value={token.symbol}>
@@ -116,76 +156,64 @@ export default function ComparePage() {
                     </option>
                   ))}
                 </select>
-                <Input
-                  type="number"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  placeholder="0.0"
-                  className="flex-1"
-                />
               </div>
-            </div>
 
-            <div className="flex justify-center">
               <button
-                onClick={handleSwapTokens}
-                className="p-2 rounded-lg border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                onClick={handleCompare}
+                disabled={!amount || parseFloat(amount) <= 0}
+                className="w-full px-8 py-5 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-black text-lg rounded-xl hover:from-blue-700 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-400 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-2xl hover:shadow-blue-500/30 hover:scale-[1.02] active:scale-[0.98]"
               >
-                <ArrowDown className="w-5 h-5 text-zinc-600 dark:text-zinc-400" />
+                {feesLoading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Finding Best Routes...
+                  </span>
+                ) : (
+                  'Compare Routes Now'
+                )}
               </button>
             </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-2 text-zinc-700 dark:text-zinc-300">
-                To
-              </label>
-              <select
-                value={tokenOut}
-                onChange={(e) => setTokenOut(e.target.value)}
-                className="w-full px-4 py-3 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-50 font-medium"
-              >
-                {TOKENS.map((token) => (
-                  <option key={token.symbol} value={token.symbol}>
-                    {token.symbol}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <button
-              onClick={handleCompare}
-              disabled={!amount || parseFloat(amount) <= 0}
-              className="w-full px-6 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-indigo-700 disabled:from-gray-400 disabled:to-gray-400 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg"
-            >
-              {feesLoading ? 'Finding Best Routes...' : 'Compare Routes'}
-            </button>
           </div>
         </Card>
 
         {/* Best Path Highlight */}
         {bestPath && (
-          <Card padding="md" className="mb-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
-            <div className="text-center">
-              <p className="text-sm text-green-800 dark:text-green-200 mb-1">Best Route Found!</p>
-              <p className="text-2xl font-bold text-green-900 dark:text-green-100">
-                Save ${bestPath.savingsUsd?.toFixed(2)} with {bestPath.action.provider}
-              </p>
-              <p className="text-sm text-green-700 dark:text-green-300 mt-1">
-                {bestPath.savingsPercent?.toFixed(1)}% cheaper than the most expensive option
-              </p>
+          <div className="mb-6 relative overflow-hidden rounded-2xl bg-gradient-to-r from-green-500 to-green-600 p-1 shadow-2xl shadow-green-500/30 animate-pulse">
+            <div className="bg-white dark:bg-zinc-900 rounded-[14px] p-6">
+              <div className="text-center">
+                <div className="inline-flex items-center gap-2 mb-3">
+                  <Zap className="w-6 h-6 text-green-600 dark:text-green-400 fill-green-600 dark:fill-green-400" />
+                  <p className="text-sm font-bold text-green-800 dark:text-green-200 uppercase tracking-wide">
+                    Best Route Found!
+                  </p>
+                </div>
+                <p className="text-3xl md:text-4xl font-black text-green-600 dark:text-green-400 mb-2">
+                  Save ${bestPath.savingsUsd?.toFixed(2)}
+                </p>
+                <p className="text-lg font-semibold text-zinc-700 dark:text-zinc-300">
+                  with {bestPath.action.provider}
+                </p>
+                <p className="text-sm text-green-700 dark:text-green-400 mt-2 font-medium">
+                  {bestPath.savingsPercent?.toFixed(1)}% cheaper than the most expensive option
+                </p>
+              </div>
             </div>
-          </Card>
+          </div>
         )}
 
         {/* Results */}
         {compareEnabled && (
           <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">
-                Available Routes ({paths.length})
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+              <h2 className="text-3xl font-black text-zinc-900 dark:text-zinc-50">
+                Available Routes
+                <span className="ml-3 text-lg font-semibold px-3 py-1 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 rounded-lg">
+                  {paths.length} options
+                </span>
               </h2>
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                Sorted by total cost (cheapest first)
+              <p className="text-sm text-zinc-600 dark:text-zinc-400 font-medium flex items-center gap-2">
+                <TrendingDown className="w-4 h-4" />
+                Sorted by total cost · Cheapest first
               </p>
             </div>
 
