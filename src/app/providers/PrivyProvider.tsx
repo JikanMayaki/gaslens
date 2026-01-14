@@ -9,6 +9,11 @@ export default function PrivyProvider({
 }) {
   const appId = process.env.NEXT_PUBLIC_PRIVY_APP_ID;
 
+  // Debug logging
+  if (typeof window !== 'undefined') {
+    console.log('Privy App ID:', appId);
+  }
+
   // Fallback to children without Privy if no app ID is configured
   // This allows the app to build and run without Privy configuration
   if (!appId || appId === 'your_privy_app_id_here') {
@@ -26,7 +31,6 @@ export default function PrivyProvider({
         appearance: {
           theme: 'light',
           accentColor: '#3B82F6',
-          logo: 'https://gaslens.com/logo.png',
         },
       }}
     >
