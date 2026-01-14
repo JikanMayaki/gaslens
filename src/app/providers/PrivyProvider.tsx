@@ -16,10 +16,16 @@ export default function PrivyProvider({
 
   // Fallback to children without Privy if no app ID is configured
   // This allows the app to build and run without Privy configuration
-  if (!appId || appId === 'your_privy_app_id_here') {
+  if (!appId || appId === 'your_privy_app_id_here' || appId.trim() === '') {
     if (typeof window !== 'undefined') {
       console.warn('Privy App ID not configured. Sign in will not work. Get your App ID from: https://dashboard.privy.io');
     }
+    return <>{children}</>;
+  }
+
+  // Extra safety: validate the App ID format
+  if (!appId.startsWith('cm') || appId.length < 20) {
+    console.error('Invalid Privy App ID format:', appId);
     return <>{children}</>;
   }
 
