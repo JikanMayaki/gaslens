@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { ArrowDown, RefreshCw, AlertCircle } from 'lucide-react';
+import { ArrowDown, RefreshCw, AlertCircle, Zap, TrendingDown } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Input } from '../components/ui/Input';
 import { PathCard } from '../components/PathCard';
@@ -251,6 +251,7 @@ export default function ComparePage() {
             )}
           </div>
         )}
+      </div>
       </div>
     </div>
   );
