@@ -2,7 +2,7 @@ import type { GasPrice } from '@/types/fee';
 import type { ApiResponse } from '@/types/api';
 
 const ETHERSCAN_API_KEY = process.env.NEXT_PUBLIC_ETHERSCAN_API_KEY;
-const ETHERSCAN_BASE_URL = 'https://api.etherscan.io/api';
+const ETHERSCAN_BASE_URL = 'https://api.etherscan.io/v2/api';
 
 /**
  * Fetch current gas prices from Etherscan
@@ -10,7 +10,7 @@ const ETHERSCAN_BASE_URL = 'https://api.etherscan.io/api';
 export async function fetchGasPrices(): Promise<ApiResponse<GasPrice>> {
   try {
     const response = await fetch(
-      `${ETHERSCAN_BASE_URL}?module=gastracker&action=gasoracle&apikey=${ETHERSCAN_API_KEY}`
+      `${ETHERSCAN_BASE_URL}?chainid=1&module=gastracker&action=gasoracle&apikey=${ETHERSCAN_API_KEY}`
     );
 
     if (!response.ok) {
