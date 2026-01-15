@@ -2,32 +2,14 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Zap, Menu, X, TrendingUp, User, LogOut } from 'lucide-react';
+import { Zap, Menu, X, TrendingUp } from 'lucide-react';
 import { useGasPrice } from '@/app/lib/hooks/useGasPrice';
 import { formatGwei } from '@/app/lib/constants/api/utils/formatting';
-import { usePrivy } from '@privy-io/react-auth';
+import { ConnectButton } from '@rainbow-me/rainbowkit';
 
 function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { gasPrice } = useGasPrice();
-
-  // Safely handle Privy hook when provider isn't configured
-  let ready = false;
-  let authenticated = false;
-  let user = null;
-  let login = () => console.warn('Privy not configured');
-  let logout = () => {};
-
-  try {
-    const privyHook = usePrivy();
-    ready = privyHook.ready;
-    authenticated = privyHook.authenticated;
-    user = privyHook.user;
-    login = privyHook.login;
-    logout = privyHook.logout;
-  } catch (e) {
-    // Privy provider not configured, fallback to default values
-  }
 
   return (
     <header className="sticky top-0 z-50 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-lg shadow-md border-b border-gray-200 dark:border-zinc-800">
@@ -82,39 +64,10 @@ function Header() {
 
           {/* Desktop CTA Buttons */}
           <div className="hidden md:flex items-center space-x-3">
-            {ready && authenticated && user ? (
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 dark:bg-blue-950/30 rounded-xl border border-blue-200 dark:border-blue-800">
-                  <User className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                  <div className="text-left">
-                    <p className="text-xs font-medium text-zinc-600 dark:text-zinc-400">Welcome</p>
-                    <p className="text-sm font-bold text-zinc-900 dark:text-zinc-50">
-                      {user.email?.address || user.google?.email || user.twitter?.username || 'User'}
-                    </p>
-                  </div>
-                </div>
-                <button
-                  onClick={logout}
-                  className="p-2.5 text-zinc-600 dark:text-zinc-400 hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-600 dark:hover:text-red-400 rounded-xl transition-all"
-                  title="Sign Out"
-                >
-                  <LogOut className="w-5 h-5" />
-                </button>
-              </div>
-            ) : (
-              <>
-                <button
-                  onClick={login}
-                  disabled={!ready}
-                  className="px-5 py-2.5 text-blue-600 dark:text-blue-400 font-bold hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-xl transition-all disabled:opacity-50"
-                >
-                  Sign In
-                </button>
-                <Link href="/compare" className="px-5 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold rounded-xl hover:shadow-xl hover:shadow-blue-500/30 transition-all hover:scale-105">
-                  Get Started
-                </Link>
-              </>
-            )}
+            <ConnectButton />
+            <Link href="/compare" className="px-5 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold rounded-xl hover:shadow-xl hover:shadow-blue-500/30 transition-all hover:scale-105">
+              Get Started
+            </Link>
           </div>
 
           {/* Mobile Menu Button */}
@@ -153,49 +106,16 @@ function Header() {
                 Docs
               </a>
               <div className="flex flex-col space-y-2 px-4 pt-4 border-t border-gray-200 dark:border-zinc-800">
-                {ready && authenticated && user ? (
-                  <>
-                    <div className="flex items-center gap-2 px-4 py-3 bg-blue-50 dark:bg-blue-950/30 rounded-xl border border-blue-200 dark:border-blue-800">
-                      <User className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                      <div className="flex-1 text-left">
-                        <p className="text-xs font-medium text-zinc-600 dark:text-zinc-400">Signed in as</p>
-                        <p className="text-sm font-bold text-zinc-900 dark:text-zinc-50">
-                          {user.email?.address || user.google?.email || user.twitter?.username || 'User'}
-                        </p>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => {
-                        logout();
-                        setMobileMenuOpen(false);
-                      }}
-                      className="px-4 py-2 text-center text-red-600 dark:text-red-400 font-semibold hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-colors flex items-center justify-center gap-2"
-                    >
-                      <LogOut className="w-4 h-4" />
-                      Sign Out
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <button
-                      onClick={() => {
-                        login();
-                        setMobileMenuOpen(false);
-                      }}
-                      disabled={!ready}
-                      className="px-4 py-2 text-center text-blue-600 dark:text-blue-400 font-semibold hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors disabled:opacity-50"
-                    >
-                      Sign In
-                    </button>
-                    <Link
-                      href="/compare"
-                      className="px-4 py-2 text-center bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:shadow-lg transition-all"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      Get Started
-                    </Link>
-                  </>
-                )}
+                <div className="flex justify-center">
+                  <ConnectButton />
+                </div>
+                <Link
+                  href="/compare"
+                  className="px-4 py-2 text-center bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:shadow-lg transition-all"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Get Started
+                </Link>
               </div>
             </nav>
           </div>

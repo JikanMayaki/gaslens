@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Header from "./components/ui/layout/Header";
 import Footer from "./components/ui/layout/Footer";
-import PrivyProvider from "./providers/PrivyProvider";
+import RainbowKit from "./providers/RainbowKitProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,13 +30,13 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <PrivyProvider>
+        <RainbowKit>
           <Header />
           <main className="min-h-screen">
             {children}
           </main>
           <Footer />
-        </PrivyProvider>
+        </RainbowKit>
       </body>
     </html>
   );
