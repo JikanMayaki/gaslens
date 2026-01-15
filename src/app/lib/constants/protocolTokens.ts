@@ -85,6 +85,27 @@ export const PROTOCOL_TOKEN_SUPPORT: Record<string, string[]> = {
 
   // 0x - Aggregator, supports all tokens
   '0x': ALL_POPULAR_TOKENS.map(addr => addr.toLowerCase()),
+
+  // Chainflip - Cross-chain bridge, limited token support (only major assets)
+  'chainflip': [
+    ETH_ADDRESS,
+    WETH_ADDRESS,
+    '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599', // WBTC
+    USDC_ADDRESS,
+    USDT_ADDRESS,
+    DAI_ADDRESS,
+    // Chainflip only supports major cross-chain assets, not BNB, meme coins, etc.
+  ].map(addr => addr.toLowerCase()),
+
+  // Relay - Cross-chain bridge, limited to major tokens
+  'relay': [
+    ETH_ADDRESS,
+    WETH_ADDRESS,
+    '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599', // WBTC
+    USDC_ADDRESS,
+    USDT_ADDRESS,
+    DAI_ADDRESS,
+  ].map(addr => addr.toLowerCase()),
 };
 
 /**
@@ -93,8 +114,16 @@ export const PROTOCOL_TOKEN_SUPPORT: Record<string, string[]> = {
 export function protocolSupportsToken(protocol: string, tokenAddress: string): boolean {
   const supportedTokens = PROTOCOL_TOKEN_SUPPORT[protocol.toLowerCase()];
   if (!supportedTokens) {
-    // If protocol not in our list, assume it supports all tokens (fail-open for aggregators)
-    return true;
+    // If protocol not in our list, be conservative and only allow major tokens + stablecoins
+    // This prevents showing protocols for unsupported exotic tokens
+    const safelist = [
+      ...STABLECOIN_ADDRESSES,
+      ETH_ADDRESS,
+      WETH_ADDRESS,
+      '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599', // WBTC
+    ].map(addr => addr.toLowerCase());
+
+    return safelist.includes(tokenAddress.toLowerCase());
   }
 
   return supportedTokens.includes(tokenAddress.toLowerCase());
