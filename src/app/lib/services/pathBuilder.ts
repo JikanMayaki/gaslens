@@ -1,5 +1,7 @@
 import { SwapPath, PathStep } from '@/types/path';
 import { ProtocolFee } from '@/types/protocol';
+import { protocolSupportsTokenPair } from '../constants/protocolTokens';
+import { getTokenBySymbol } from '../constants/tokens';
 
 /**
  * Deep link URL builders for each protocol
@@ -66,8 +68,20 @@ export function buildSwapPaths(
   amountIn: string,
   ethPrice: number
 ): SwapPath[] {
-  // Build direct protocol paths
-  const directPaths: SwapPath[] = protocolFees.map((fee) => {
+  // Get token addresses for filtering
+  const tokenInData = getTokenBySymbol(tokenIn);
+  const tokenOutData = getTokenBySymbol(tokenOut);
+
+  const tokenInAddress = tokenInData?.address || tokenIn;
+  const tokenOutAddress = tokenOutData?.address || tokenOut;
+
+  // Filter protocols that support this token pair
+  const supportedProtocolFees = protocolFees.filter((fee) =>
+    protocolSupportsTokenPair(fee.protocolId, tokenInAddress, tokenOutAddress)
+  );
+
+  // Build direct protocol paths (only for supported protocols)
+  const directPaths: SwapPath[] = supportedProtocolFees.map((fee) => {
     const protocol = fee.protocolId;
     const protocolName = fee.protocolName;
 
@@ -118,8 +132,15 @@ export function buildSwapPaths(
     };
   });
 
-  // Add aggregated paths (1inch, Matcha)
-  const aggregatedPaths = buildAggregatedPaths(tokenIn, tokenOut, amountIn, ethPrice);
+  // Add aggregated paths (1inch, Matcha) - only if they support the pair
+  const aggregatedPaths = buildAggregatedPaths(
+    tokenIn,
+    tokenOut,
+    amountIn,
+    ethPrice,
+    tokenInAddress,
+    tokenOutAddress
+  );
 
   // Combine all paths
   const allPaths = [...directPaths, ...aggregatedPaths];
@@ -145,11 +166,17 @@ function buildAggregatedPaths(
   tokenIn: string,
   tokenOut: string,
   amountIn: string,
-  ethPrice: number
+  ethPrice: number,
+  tokenInAddress: string,
+  tokenOutAddress: string
 ): SwapPath[] {
   const amount = parseFloat(amountIn);
 
-  return [
+  const paths: SwapPath[] = [];
+
+  // 1inch - add only if it supports the pair
+  if (protocolSupportsTokenPair('1inch', tokenInAddress, tokenOutAddress)) {
+    paths.push(
     {
       id: '1inch-aggregated',
       name: '1inch Optimized Route',
@@ -176,8 +203,12 @@ function buildAggregatedPaths(
         url: PROTOCOL_DEEP_LINKS['1inch'](tokenIn, tokenOut, amountIn),
         provider: '1inch Network',
       },
-    },
-    {
+    });
+  }
+
+  // Matcha (0x) - add only if it supports the pair
+  if (protocolSupportsTokenPair('0x', tokenInAddress, tokenOutAddress)) {
+    paths.push({
       id: 'matcha-aggregated',
       name: 'Matcha 0x Route',
       type: 'aggregated',
@@ -203,8 +234,10 @@ function buildAggregatedPaths(
         url: PROTOCOL_DEEP_LINKS.matcha(tokenIn, tokenOut, amountIn),
         provider: 'Matcha (0x)',
       },
-    },
-  ];
+    });
+  }
+
+  return paths;
 }
 
 /**

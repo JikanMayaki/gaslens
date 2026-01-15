@@ -55,6 +55,11 @@ export default function ComparePage() {
 
   const bestPath = paths.find((p) => p.isBest);
 
+  // Calculate how many protocols were filtered out
+  const totalProtocols = fees.length + 2; // fees + 2 aggregators (1inch, Matcha)
+  const shownProtocols = paths.length;
+  const filteredCount = totalProtocols - shownProtocols;
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-white via-blue-50/20 to-white dark:from-zinc-950 dark:via-blue-950/10 dark:to-zinc-950">
       <div className="container mx-auto px-6 py-12">
@@ -237,11 +242,28 @@ export default function ComparePage() {
                 </div>
               </Card>
             ) : paths.length > 0 ? (
-              <div className="space-y-4">
-                {paths.map((path, index) => (
-                  <PathCard key={path.id} path={path} rank={index + 1} />
-                ))}
-              </div>
+              <>
+                {/* Smart filtering notification */}
+                {filteredCount > 0 && (
+                  <Card padding="md" className="mb-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+                    <div className="flex items-start gap-3 text-blue-800 dark:text-blue-200">
+                      <AlertCircle className="w-5 h-5 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="font-semibold text-sm">Smart Protocol Filtering</p>
+                        <p className="text-sm mt-1">
+                          {filteredCount} protocol{filteredCount > 1 ? 's' : ''} automatically hidden because they don't support this {tokenIn}/{tokenOut} pair.
+                          Showing only protocols with liquidity for your selected tokens.
+                        </p>
+                      </div>
+                    </div>
+                  </Card>
+                )}
+                <div className="space-y-4">
+                  {paths.map((path, index) => (
+                    <PathCard key={path.id} path={path} rank={index + 1} />
+                  ))}
+                </div>
+              </>
             ) : (
               <Card padding="lg">
                 <div className="text-center py-12 text-zinc-600 dark:text-zinc-400">
