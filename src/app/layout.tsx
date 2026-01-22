@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Header from "./components/ui/layout/Header";
-import Footer from "./components/ui/layout/Footer";
-import RainbowKit from "./providers/RainbowKitProvider";
+import Providers from "./providers/Providers";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,13 +28,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <RainbowKit>
-          <Header />
-          <main className="min-h-screen">
-            {children}
-          </main>
-          <Footer />
-        </RainbowKit>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

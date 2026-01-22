@@ -1,51 +1,31 @@
 import type { GasPrice } from '@/types/fee';
 import type { ApiResponse } from '@/types/api';
 
-const ETHERSCAN_API_KEY = process.env.NEXT_PUBLIC_ETHERSCAN_API_KEY;
-const ETHERSCAN_BASE_URL = 'https://api.etherscan.io/v2/api';
-
 /**
- * Fetch current gas prices from Etherscan
+ * SECURITY FIX: Fetch gas prices through our internal API proxy
+ * This prevents exposing API keys in the client bundle
  */
 export async function fetchGasPrices(): Promise<ApiResponse<GasPrice>> {
   try {
-    const response = await fetch(
-      `${ETHERSCAN_BASE_URL}?chainid=1&module=gastracker&action=gasoracle&apikey=${ETHERSCAN_API_KEY}`
-    );
+    // Call our internal API route instead of calling Etherscan directly
+    const response = await fetch('/api/gas-price');
 
     if (!response.ok) {
-      throw new Error(`Etherscan API error: ${response.statusText}`);
+      throw new Error('Failed to fetch gas prices');
     }
 
     const data = await response.json();
 
-    if (data.status !== '1') {
-      throw new Error(data.message || 'Failed to fetch gas prices');
+    if (!data.success) {
+      throw new Error('API returned error status');
     }
 
-    const result = data.result;
-
-    // Convert Etherscan response to our GasPrice format
-    const gasPrice: GasPrice = {
-      slow: parseFloat(result.SafeGasPrice),
-      standard: parseFloat(result.ProposeGasPrice),
-      fast: parseFloat(result.FastGasPrice),
-      instant: parseFloat(result.FastGasPrice) * 1.2, // Estimate 20% higher for instant
-      timestamp: Date.now(),
-    };
-
-    return {
-      data: gasPrice,
-      success: true,
-      timestamp: Date.now(),
-    };
+    return data;
   } catch (error) {
-    console.error('Error fetching gas prices:', error);
-
     return {
       data: getMockGasPrice(),
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: 'Failed to fetch gas prices',
       timestamp: Date.now(),
     };
   }

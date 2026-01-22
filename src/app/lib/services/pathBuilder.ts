@@ -5,42 +5,43 @@ import { getTokenBySymbol } from '../constants/tokens';
 
 /**
  * Deep link URL builders for each protocol
+ * SECURITY FIX: Added URL encoding to prevent injection attacks
  */
 export const PROTOCOL_DEEP_LINKS = {
   'uniswap-v3': (tokenIn: string, tokenOut: string, amount: string) => {
     const tokenInAddress = getTokenAddress(tokenIn);
     const tokenOutAddress = getTokenAddress(tokenOut);
-    return `https://app.uniswap.org/#/swap?inputCurrency=${tokenInAddress}&outputCurrency=${tokenOutAddress}&exactAmount=${amount}`;
+    return `https://app.uniswap.org/#/swap?inputCurrency=${encodeURIComponent(tokenInAddress)}&outputCurrency=${encodeURIComponent(tokenOutAddress)}&exactAmount=${encodeURIComponent(amount)}`;
   },
 
   curve: (tokenIn: string, tokenOut: string, amount: string) => {
-    return `https://curve.fi/#/ethereum/swap?from=${tokenIn}&to=${tokenOut}&amount=${amount}`;
+    return `https://curve.fi/#/ethereum/swap?from=${encodeURIComponent(tokenIn)}&to=${encodeURIComponent(tokenOut)}&amount=${encodeURIComponent(amount)}`;
   },
 
   sushiswap: (tokenIn: string, tokenOut: string, amount: string) => {
     const tokenInAddress = getTokenAddress(tokenIn);
     const tokenOutAddress = getTokenAddress(tokenOut);
-    return `https://www.sushi.com/swap?fromCurrency=${tokenInAddress}&toCurrency=${tokenOutAddress}&fromAmount=${amount}`;
+    return `https://www.sushi.com/swap?fromCurrency=${encodeURIComponent(tokenInAddress)}&toCurrency=${encodeURIComponent(tokenOutAddress)}&fromAmount=${encodeURIComponent(amount)}`;
   },
 
   chainflip: (tokenIn: string, tokenOut: string, amount: string) => {
-    return `https://swap.chainflip.io/?from=${tokenIn}&to=${tokenOut}&amount=${amount}`;
+    return `https://swap.chainflip.io/?from=${encodeURIComponent(tokenIn)}&to=${encodeURIComponent(tokenOut)}&amount=${encodeURIComponent(amount)}`;
   },
 
   relay: (tokenIn: string, tokenOut: string, amount: string) => {
-    return `https://relay.link/swap?from=${tokenIn}&to=${tokenOut}&amount=${amount}`;
+    return `https://relay.link/swap?from=${encodeURIComponent(tokenIn)}&to=${encodeURIComponent(tokenOut)}&amount=${encodeURIComponent(amount)}`;
   },
 
   '1inch': (tokenIn: string, tokenOut: string, amount: string) => {
     const tokenInAddress = getTokenAddress(tokenIn);
     const tokenOutAddress = getTokenAddress(tokenOut);
-    return `https://app.1inch.io/#/1/simple/swap/${tokenInAddress}/${tokenOutAddress}?sourceTokenAmount=${amount}`;
+    return `https://app.1inch.io/#/1/simple/swap/${encodeURIComponent(tokenInAddress)}/${encodeURIComponent(tokenOutAddress)}?sourceTokenAmount=${encodeURIComponent(amount)}`;
   },
 
   matcha: (tokenIn: string, tokenOut: string, amount: string) => {
     const tokenInAddress = getTokenAddress(tokenIn);
     const tokenOutAddress = getTokenAddress(tokenOut);
-    return `https://matcha.xyz/tokens/ethereum/${tokenOutAddress}?sellAmount=${amount}&sellToken=${tokenInAddress}`;
+    return `https://matcha.xyz/tokens/ethereum/${encodeURIComponent(tokenOutAddress)}?sellAmount=${encodeURIComponent(amount)}&sellToken=${encodeURIComponent(tokenInAddress)}`;
   },
 };
 

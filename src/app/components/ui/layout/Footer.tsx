@@ -44,19 +44,19 @@ function Footer() {
             <h4 className="font-semibold text-gray-900 mb-3">Resources</h4>
             <ul className="space-y-2">
               <li>
-                <a href="#" className="text-gray-600 hover:text-blue-600 text-sm transition-colors">
+                <Link href="/docs" className="text-gray-600 hover:text-blue-600 text-sm transition-colors">
                   Documentation
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="text-gray-600 hover:text-blue-600 text-sm transition-colors">
+                <Link href="/docs/api" className="text-gray-600 hover:text-blue-600 text-sm transition-colors">
                   API Reference
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="text-gray-600 hover:text-blue-600 text-sm transition-colors">
-                  Blog
-                </a>
+                <Link href="/status" className="text-gray-600 hover:text-blue-600 text-sm transition-colors">
+                  System Status
+                </Link>
               </li>
             </ul>
           </div>

@@ -1,24 +1,58 @@
 import { NextResponse } from 'next/server';
 import { NextRequest } from 'next/server';
 import type { ProtocolFee } from '@/types/protocol';
+import { checkRateLimit, getClientIp, RATE_LIMIT_CONFIGS } from '@/app/lib/middleware/rateLimit';
+import { protocolFeesQuerySchema, validateInput } from '@/app/lib/validation/apiSchemas';
 
 export async function GET(request: NextRequest) {
+  // SECURITY FIX: Apply rate limiting
+  const clientIp = getClientIp(request);
+  const rateLimitResult = checkRateLimit(clientIp, RATE_LIMIT_CONFIGS.protocolFees);
+
+  if (rateLimitResult.limited) {
+    return NextResponse.json(
+      {
+        error: 'Too many requests',
+        retryAfter: Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000),
+      },
+      {
+        status: 429,
+        headers: {
+          'Retry-After': String(Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000)),
+          'X-RateLimit-Limit': String(RATE_LIMIT_CONFIGS.protocolFees.maxRequests),
+          'X-RateLimit-Remaining': '0',
+          'X-RateLimit-Reset': String(Math.floor(rateLimitResult.resetTime / 1000)),
+        },
+      }
+    );
+  }
+
   try {
     const searchParams = request.nextUrl.searchParams;
-    const tokenIn = searchParams.get('tokenIn');
-    const tokenOut = searchParams.get('tokenOut');
-    const amountIn = searchParams.get('amountIn');
-    const gasPrice = parseFloat(searchParams.get('gasPrice') || '35');
 
-    if (!tokenIn || !tokenOut || !amountIn) {
+    // SECURITY FIX: Use Zod validation for comprehensive input validation
+    const validationResult = validateInput(protocolFeesQuerySchema, {
+      tokenIn: searchParams.get('tokenIn'),
+      tokenOut: searchParams.get('tokenOut'),
+      amountIn: searchParams.get('amountIn'),
+      gasPrice: searchParams.get('gasPrice') || '35',
+    });
+
+    if (!validationResult.success) {
       return NextResponse.json(
         {
-          error: 'Missing required parameters',
-          message: 'tokenIn, tokenOut, and amountIn are required',
+          error: 'Invalid parameters',
+          details: validationResult.errors,
         },
         { status: 400 }
       );
     }
+
+    const { tokenIn, tokenOut, amountIn, gasPrice: gasPriceStr } = validationResult.data;
+
+    // Parse validated numeric values
+    const amount = parseFloat(amountIn);
+    const gasPrice = parseFloat(gasPriceStr || '35');
 
     // Mock protocol fee data (in production, this would call actual DEX APIs)
     const protocols = [
@@ -54,7 +88,6 @@ export async function GET(request: NextRequest) {
       },
     ];
 
-    const amount = parseFloat(amountIn);
     const ethPrice = 2000; // In production, fetch from CoinGecko
 
     const fees: ProtocolFee[] = protocols.map(protocol => {
@@ -69,18 +102,25 @@ export async function GET(request: NextRequest) {
       };
     });
 
-    return NextResponse.json({
-      data: fees,
-      success: true,
-      timestamp: Date.now(),
-    });
-  } catch (error) {
-    console.error('Error calculating protocol fees:', error);
-
     return NextResponse.json(
       {
-        error: error instanceof Error ? error.message : 'Unknown error',
-        message: 'Failed to calculate protocol fees',
+        data: fees,
+        success: true,
+        timestamp: Date.now(),
+      },
+      {
+        headers: {
+          'X-RateLimit-Limit': String(RATE_LIMIT_CONFIGS.protocolFees.maxRequests),
+          'X-RateLimit-Remaining': String(rateLimitResult.remaining),
+          'X-RateLimit-Reset': String(Math.floor(rateLimitResult.resetTime / 1000)),
+        },
+      }
+    );
+  } catch (error) {
+    // SECURITY FIX: Generic error message (no information disclosure)
+    return NextResponse.json(
+      {
+        error: 'Failed to calculate protocol fees',
       },
       { status: 500 }
     );
