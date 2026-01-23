@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { Menu, RefreshCw, ArrowDown } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Menu, RefreshCw, ArrowDown, Sun, Moon } from 'lucide-react';
 import Link from 'next/link';
 import { POPULAR_TOKENS } from './lib/constants/tokens';
 
@@ -12,6 +12,34 @@ export default function Home() {
   const [fromAmount, setFromAmount] = useState('');
   const [toAmount, setToAmount] = useState('');
   const [mevProtection, setMevProtection] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
+
+  // Initialize dark mode from system preference or localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedMode = localStorage.getItem('darkMode');
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const isDark = savedMode ? savedMode === 'true' : prefersDark;
+      setDarkMode(isDark);
+      if (isDark) {
+        document.documentElement.classList.add('dark');
+      }
+    }
+  }, []);
+
+  // Toggle dark mode
+  const toggleDarkMode = () => {
+    setDarkMode(!darkMode);
+    if (typeof window !== 'undefined') {
+      if (!darkMode) {
+        document.documentElement.classList.add('dark');
+        localStorage.setItem('darkMode', 'true');
+      } else {
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem('darkMode', 'false');
+      }
+    }
+  };
 
   // Network congestion detection (mock for now)
   const networkCongested = true;
@@ -32,12 +60,34 @@ export default function Home() {
             <Link href="/" className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               GasLens
             </Link>
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-            >
-              <Menu className="w-6 h-6 text-zinc-900 dark:text-zinc-50" />
-            </button>
+            <div className="flex items-center gap-3">
+              {/* Desktop buttons - hidden on mobile */}
+              <div className="hidden sm:flex items-center gap-3">
+                <button className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200">
+                  Connect Wallet
+                </button>
+                <button className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200">
+                  Get Started
+                </button>
+              </div>
+              <button
+                onClick={toggleDarkMode}
+                className="p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                aria-label="Toggle dark mode"
+              >
+                {darkMode ? (
+                  <Sun className="w-5 h-5 text-zinc-900 dark:text-zinc-50" />
+                ) : (
+                  <Moon className="w-5 h-5 text-zinc-900 dark:text-zinc-50" />
+                )}
+              </button>
+              <button
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className="p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+              >
+                <Menu className="w-6 h-6 text-zinc-900 dark:text-zinc-50" />
+              </button>
+            </div>
           </div>
         </div>
       </header>

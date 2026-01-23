@@ -13,7 +13,7 @@ const config = getDefaultConfig({
   // Get your Project ID from: https://cloud.walletconnect.com
   projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || 'YOUR_PROJECT_ID',
   chains: [mainnet, polygon, optimism, arbitrum, base],
-  ssr: true,
+  ssr: false, // Disable SSR to avoid localStorage issues during build
 });
 
 export default function RainbowKit({
