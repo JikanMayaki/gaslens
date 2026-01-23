@@ -1,213 +1,324 @@
 'use client';
 
-import Link from "next/link";
-import { Zap, TrendingDown, Shield, Clock, ArrowRight, Sparkles, Users, DollarSign } from "lucide-react";
-import { Button } from "./components/ui/Button";
-import { Card } from "./components/ui/Card";
-import { useState, useEffect } from "react";
+import { useState } from 'react';
+import { Menu, RefreshCw, ArrowDown } from 'lucide-react';
+import Link from 'next/link';
+import { POPULAR_TOKENS } from './lib/constants/tokens';
 
 export default function Home() {
-  const [savedAmount, setSavedAmount] = useState(0);
-  const targetAmount = 2847293; // Total saved for users
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [fromToken, setFromToken] = useState('ETH');
+  const [toToken, setToToken] = useState('USDT');
+  const [fromAmount, setFromAmount] = useState('');
+  const [toAmount, setToAmount] = useState('');
+  const [mevProtection, setMevProtection] = useState(false);
 
-  // Animated counter effect
-  useEffect(() => {
-    const duration = 2000; // 2 seconds
-    const steps = 60;
-    const increment = targetAmount / steps;
-    let current = 0;
+  // Network congestion detection (mock for now)
+  const networkCongested = true;
+  const potentialSavings = 45;
 
-    const timer = setInterval(() => {
-      current += increment;
-      if (current >= targetAmount) {
-        setSavedAmount(targetAmount);
-        clearInterval(timer);
-      } else {
-        setSavedAmount(Math.floor(current));
-      }
-    }, duration / steps);
-
-    return () => clearInterval(timer);
-  }, []);
+  const handleCompare = () => {
+    if (fromAmount && fromToken && toToken) {
+      window.location.href = `/compare?tokenIn=${fromToken}&tokenOut=${toToken}&amountIn=${fromAmount}`;
+    }
+  };
 
   return (
-    <div className="bg-gradient-to-b from-white via-blue-50/30 to-white dark:from-zinc-950 dark:via-blue-950/10 dark:to-zinc-950 overflow-hidden">
-      {/* Hero Section */}
-      <section className="container mx-auto px-6 py-16 md:py-24 relative">
-        {/* Animated background gradient */}
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-purple-500/5 to-blue-500/5 dark:from-blue-500/10 dark:via-purple-500/10 dark:to-blue-500/10 blur-3xl animate-pulse"></div>
-
-        <div className="max-w-5xl mx-auto text-center relative z-10">
-          {/* Trust badge */}
-          <div className="inline-flex items-center gap-2 px-5 py-2.5 mb-8 rounded-full bg-gradient-to-r from-blue-500/10 to-purple-500/10 dark:from-blue-500/20 dark:to-purple-500/20 border border-blue-200/50 dark:border-blue-500/30 backdrop-blur-sm">
-            <Sparkles className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-            <span className="text-sm font-semibold bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 bg-clip-text text-transparent">
-              See Through the Fees, Choose the Cheapest Path
-            </span>
+    <div className="min-h-screen bg-white dark:bg-zinc-950">
+      {/* Header */}
+      <header className="sticky top-0 z-50 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-lg border-b border-zinc-200 dark:border-zinc-800">
+        <div className="container mx-auto px-4 sm:px-6 py-4">
+          <div className="flex items-center justify-between">
+            <Link href="/" className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              GasLens
+            </Link>
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+            >
+              <Menu className="w-6 h-6 text-zinc-900 dark:text-zinc-50" />
+            </button>
           </div>
+        </div>
+      </header>
 
-          <h1 className="text-5xl md:text-7xl font-black mb-6 text-zinc-900 dark:text-zinc-50 tracking-tight leading-tight">
-            Stop Overpaying for
-            <br />
-            <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 dark:from-blue-400 dark:via-purple-400 dark:to-blue-400 bg-clip-text text-transparent bg-[length:200%_auto] animate-gradient">
-              DeFi Swaps
-            </span>
+      {/* Mobile Menu */}
+      {isMenuOpen && (
+        <div className="fixed inset-0 z-40 bg-white dark:bg-zinc-950 pt-20">
+          <nav className="container mx-auto px-6 py-8">
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50 mb-3">
+                  Product
+                </h3>
+                <ul className="space-y-3">
+                  <li>
+                    <Link
+                      href="/compare"
+                      className="block text-zinc-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                    >
+                      Fee Comparison
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/directory"
+                      className="block text-zinc-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                    >
+                      Protocol Directory
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/pricing"
+                      className="block text-zinc-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                    >
+                      Pricing
+                    </Link>
+                  </li>
+                </ul>
+              </div>
+
+              <div>
+                <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50 mb-3">
+                  Resources
+                </h3>
+                <ul className="space-y-3">
+                  <li>
+                    <Link
+                      href="/docs"
+                      className="block text-zinc-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                    >
+                      Documentation
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/docs/api"
+                      className="block text-zinc-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                    >
+                      API Reference
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/status"
+                      className="block text-zinc-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                    >
+                      System Status
+                    </Link>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </nav>
+        </div>
+      )}
+
+      {/* Main Content */}
+      <main className="container mx-auto px-4 sm:px-6 py-8 sm:py-12 max-w-2xl">
+        {/* Hero Text */}
+        <div className="mb-8 sm:mb-12">
+          <h1 className="text-4xl sm:text-5xl font-bold text-zinc-900 dark:text-zinc-50 mb-4 leading-tight">
+            The Smartest Way to <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Swap</span>
           </h1>
-
-          <p className="text-xl md:text-2xl text-zinc-600 dark:text-zinc-400 mb-8 max-w-3xl mx-auto leading-relaxed">
-            Compare gas fees across <span className="font-bold text-zinc-900 dark:text-zinc-50">7+ protocols</span> instantly.
-            Find the cheapest route. Save <span className="font-bold text-green-600 dark:text-green-400">30-70%</span> on every swap.
+          <p className="text-base sm:text-lg text-zinc-600 dark:text-zinc-400 mb-4">
+            We scan 20+ protocols to find you the lowest fees and zero hidden slippage.
           </p>
-
-          {/* Social proof stats */}
-          <div className="flex flex-wrap justify-center gap-6 mb-10">
-            <div className="flex items-center gap-2 px-4 py-2 bg-white/60 dark:bg-zinc-900/60 backdrop-blur-sm rounded-lg border border-zinc-200/50 dark:border-zinc-700/50">
-              <DollarSign className="w-5 h-5 text-green-600 dark:text-green-400" />
-              <div className="text-left">
-                <div className="text-2xl font-bold text-zinc-900 dark:text-zinc-50 tabular-nums">
-                  ${savedAmount.toLocaleString()}
-                </div>
-                <div className="text-xs text-zinc-600 dark:text-zinc-400">Total Saved</div>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 px-4 py-2 bg-white/60 dark:bg-zinc-900/60 backdrop-blur-sm rounded-lg border border-zinc-200/50 dark:border-zinc-700/50">
-              <Users className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-              <div className="text-left">
-                <div className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">12,483</div>
-                <div className="text-xs text-zinc-600 dark:text-zinc-400">Smart Traders</div>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 px-4 py-2 bg-white/60 dark:bg-zinc-900/60 backdrop-blur-sm rounded-lg border border-zinc-200/50 dark:border-zinc-700/50">
-              <TrendingDown className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-              <div className="text-left">
-                <div className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">47%</div>
-                <div className="text-xs text-zinc-600 dark:text-zinc-400">Avg Savings</div>
-              </div>
-            </div>
+          <div className="flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-500">
+            <RefreshCw className="w-4 h-4" />
+            <span>Fees are constantly updated</span>
           </div>
-
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
-            <Link href="/compare" className="group">
-              <Button variant="primary" size="lg" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 transition-all duration-300 text-lg px-8 py-4 flex items-center gap-2">
-                Compare Fees Now
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </Button>
-            </Link>
-            <Link href="/directory">
-              <Button variant="outline" size="lg" className="border-2 border-zinc-300 dark:border-zinc-700 hover:border-blue-500 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-950/30 transition-all duration-300 text-lg px-8 py-4">
-                Browse Protocols
-              </Button>
-            </Link>
-          </div>
-
-          <p className="text-sm text-zinc-500 dark:text-zinc-500">
-            No wallet connection required · Compare in 5 seconds · Free forever
-          </p>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section className="container mx-auto px-6 py-20">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-zinc-900 dark:text-zinc-50 mb-4">
-            Why Smart Traders Use GasLens
-          </h2>
-          <p className="text-lg text-zinc-600 dark:text-zinc-400 max-w-2xl mx-auto">
-            The only tool that compares every major DEX and aggregator in one place
-          </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="group">
-            <Card padding="lg" hover className="h-full border-2 border-transparent hover:border-blue-500/50 dark:hover:border-blue-500/50 transition-all duration-300">
-              <div className="flex flex-col items-center text-center">
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center mb-4 shadow-lg shadow-blue-500/30 group-hover:scale-110 transition-transform duration-300">
-                  <TrendingDown className="w-8 h-8 text-white" />
-                </div>
-                <h3 className="text-xl font-bold mb-2 text-zinc-900 dark:text-zinc-50">
-                  Save 30-70%
-                </h3>
-                <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                  Compare fees across 7+ protocols and aggregators. Always find the cheapest route.
-                </p>
-              </div>
-            </Card>
+        {/* Swap Interface */}
+        <div className="space-y-6">
+          {/* From Token */}
+          <div className="bg-zinc-50 dark:bg-zinc-900 rounded-2xl p-4 border border-zinc-200 dark:border-zinc-800">
+            <div className="flex items-center gap-3">
+              <select
+                value={fromToken}
+                onChange={(e) => setFromToken(e.target.value)}
+                className="px-4 py-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-zinc-50 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                {POPULAR_TOKENS.slice(0, 10).map((token) => (
+                  <option key={token.symbol} value={token.symbol}>
+                    {token.symbol}
+                  </option>
+                ))}
+              </select>
+              <input
+                type="text"
+                value={fromAmount}
+                onChange={(e) => setFromAmount(e.target.value)}
+                placeholder="0.0"
+                className="flex-1 bg-transparent text-2xl font-semibold text-zinc-900 dark:text-zinc-50 placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none"
+              />
+            </div>
           </div>
 
-          <div className="group">
-            <Card padding="lg" hover className="h-full border-2 border-transparent hover:border-green-500/50 dark:hover:border-green-500/50 transition-all duration-300">
-              <div className="flex flex-col items-center text-center">
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center mb-4 shadow-lg shadow-green-500/30 group-hover:scale-110 transition-transform duration-300">
-                  <Zap className="w-8 h-8 text-white" />
-                </div>
-                <h3 className="text-xl font-bold mb-2 text-zinc-900 dark:text-zinc-50">
-                  Real-time Data
-                </h3>
-                <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                  Live gas prices and protocol fees updated every block. Always accurate.
-                </p>
-              </div>
-            </Card>
+          {/* Swap Arrow */}
+          <div className="flex justify-center -my-3 relative z-10">
+            <button
+              onClick={() => {
+                const temp = fromToken;
+                setFromToken(toToken);
+                setToToken(temp);
+              }}
+              className="p-3 bg-white dark:bg-zinc-900 border-4 border-white dark:border-zinc-950 rounded-xl shadow-lg hover:shadow-xl transition-shadow"
+            >
+              <ArrowDown className="w-5 h-5 text-zinc-600 dark:text-zinc-400" />
+            </button>
           </div>
 
-          <div className="group">
-            <Card padding="lg" hover className="h-full border-2 border-transparent hover:border-purple-500/50 dark:hover:border-purple-500/50 transition-all duration-300">
-              <div className="flex flex-col items-center text-center">
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center mb-4 shadow-lg shadow-purple-500/30 group-hover:scale-110 transition-transform duration-300">
-                  <Shield className="w-8 h-8 text-white" />
-                </div>
-                <h3 className="text-xl font-bold mb-2 text-zinc-900 dark:text-zinc-50">
-                  MEV Protection
-                </h3>
-                <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                  See MEV risk scores for each route. Protect yourself from frontrunning.
-                </p>
-              </div>
-            </Card>
+          {/* To Token */}
+          <div className="bg-zinc-50 dark:bg-zinc-900 rounded-2xl p-4 border border-zinc-200 dark:border-zinc-800">
+            <div className="flex items-center gap-3">
+              <select
+                value={toToken}
+                onChange={(e) => setToToken(e.target.value)}
+                className="px-4 py-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-zinc-50 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                {POPULAR_TOKENS.slice(0, 10).map((token) => (
+                  <option key={token.symbol} value={token.symbol}>
+                    {token.symbol}
+                  </option>
+                ))}
+              </select>
+              <input
+                type="text"
+                value={toAmount}
+                onChange={(e) => setToAmount(e.target.value)}
+                placeholder="0.0"
+                className="flex-1 bg-transparent text-2xl font-semibold text-zinc-900 dark:text-zinc-50 placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none"
+              />
+            </div>
           </div>
 
-          <div className="group">
-            <Card padding="lg" hover className="h-full border-2 border-transparent hover:border-orange-500/50 dark:hover:border-orange-500/50 transition-all duration-300">
-              <div className="flex flex-col items-center text-center">
-                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center mb-4 shadow-lg shadow-orange-500/30 group-hover:scale-110 transition-transform duration-300">
-                  <Clock className="w-8 h-8 text-white" />
-                </div>
-                <h3 className="text-xl font-bold mb-2 text-zinc-900 dark:text-zinc-50">
-                  Instant Results
-                </h3>
-                <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                  Get fee comparisons in under 2 seconds. One-click execution to any DEX.
-                </p>
-              </div>
-            </Card>
+          {/* MEV Protection Toggle */}
+          <div className="flex items-center justify-between py-2">
+            <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+              Enable MEV Protection
+            </span>
+            <button
+              onClick={() => setMevProtection(!mevProtection)}
+              className={`relative w-12 h-6 rounded-full transition-colors ${
+                mevProtection
+                  ? 'bg-blue-600'
+                  : 'bg-zinc-300 dark:bg-zinc-700'
+              }`}
+            >
+              <div
+                className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform ${
+                  mevProtection ? 'translate-x-6' : 'translate-x-0'
+                }`}
+              />
+            </button>
           </div>
-        </div>
-      </section>
 
-      {/* CTA Section */}
-      <section className="container mx-auto px-6 py-20">
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-blue-600 via-purple-600 to-blue-600 p-1">
-          <div className="relative bg-white dark:bg-zinc-900 rounded-[22px] p-12 md:p-16">
-            <div className="max-w-3xl mx-auto text-center relative z-10">
-              <h2 className="text-4xl md:text-5xl font-bold mb-6 text-zinc-900 dark:text-zinc-50">
-                Ready to Stop Overpaying?
-              </h2>
-              <p className="text-xl text-zinc-600 dark:text-zinc-400 mb-10 leading-relaxed">
-                Join <span className="font-bold text-blue-600 dark:text-blue-400">12,483 smart traders</span> who have saved over <span className="font-bold text-green-600 dark:text-green-400">${savedAmount.toLocaleString()}</span> on gas fees with GasLens
-              </p>
-              <Link href="/compare" className="group inline-block">
-                <Button variant="primary" size="lg" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-2xl shadow-blue-500/30 hover:shadow-blue-500/50 transition-all duration-300 text-xl px-12 py-5 flex items-center gap-3">
-                  Start Comparing Now
-                  <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform" />
-                </Button>
-              </Link>
-              <p className="text-sm text-zinc-500 dark:text-zinc-500 mt-6">
-                Free forever · No signup required · Compare in seconds
+          {/* Compare Button */}
+          <button
+            onClick={handleCompare}
+            disabled={!fromAmount}
+            className="w-full py-4 px-6 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-zinc-300 disabled:to-zinc-300 dark:disabled:from-zinc-700 dark:disabled:to-zinc-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200"
+          >
+            Compare Protocols
+          </button>
+
+          {/* Network Congestion Warning */}
+          {networkCongested && (
+            <div className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 border border-yellow-200 dark:border-yellow-800/50 rounded-xl p-4">
+              <p className="text-sm text-yellow-900 dark:text-yellow-100">
+                <span className="font-semibold">Network congestion detected.</span> We recommend an L2 bridge to save ~${potentialSavings}.
               </p>
             </div>
+          )}
+        </div>
+
+        {/* Footer Section */}
+        <div className="mt-16 pt-12 border-t border-zinc-200 dark:border-zinc-800">
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
+              GasLens
+            </h2>
+            <p className="text-sm text-zinc-600 dark:text-zinc-400">
+              See through the fees. Choose the cheapest path
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-8 mb-8">
+            {/* Product */}
+            <div>
+              <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50 mb-3">
+                Product
+              </h3>
+              <ul className="space-y-2">
+                <li>
+                  <Link
+                    href="/compare"
+                    className="text-sm text-zinc-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                  >
+                    Fee Comparison
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/directory"
+                    className="text-sm text-zinc-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                  >
+                    Protocol Directory
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/pricing"
+                    className="text-sm text-zinc-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                  >
+                    Pricing
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            {/* Resources */}
+            <div>
+              <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50 mb-3">
+                Resources
+              </h3>
+              <ul className="space-y-2">
+                <li>
+                  <Link
+                    href="/docs"
+                    className="text-sm text-zinc-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                  >
+                    Documentation
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/docs/api"
+                    className="text-sm text-zinc-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                  >
+                    API Reference
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/status"
+                    className="text-sm text-zinc-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                  >
+                    System Status
+                  </Link>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="text-xs text-zinc-500 dark:text-zinc-500">
+            © 2026 GasLens. All rights reserved.
           </div>
         </div>
-      </section>
+      </main>
     </div>
   );
 }
