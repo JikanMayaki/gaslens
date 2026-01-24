@@ -1,23 +1,34 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Menu, Search, Bell, TrendingDown, TrendingUp, Zap, Sun, Moon, ChevronRight, Sparkles } from 'lucide-react';
+import { Search, Bell, ArrowUpRight, FileText, Send, Sun, Moon } from 'lucide-react';
 import Link from 'next/link';
 
 export default function Home() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [targetGasPrice, setTargetGasPrice] = useState('');
+  const [targetGasPrice, setTargetGasPrice] = useState(12);
   const [darkMode, setDarkMode] = useState(false);
-  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [selectedTxType, setSelectedTxType] = useState('Swap on Uniswap');
 
-  // Mock gas data - replace with real API
-  const currentGasPrice = 28; // Gwei
-  const gasStatus = currentGasPrice < 30 ? 'low' : currentGasPrice < 50 ? 'fair' : 'high';
-  const gasStatusText = gasStatus === 'low' ? 'Low' : gasStatus === 'fair' ? 'Fair' : 'High';
-  const gasStatusEmoji = gasStatus === 'low' ? '🟢' : gasStatus === 'fair' ? '🟡' : '🔴';
-  const gasRecommendation = gasStatus === 'low' ? 'Great time to transact!' : gasStatus === 'fair' ? 'Moderate fees expected' : 'Consider waiting or using L2';
-  const totalSavings = 1247; // Mock savings in USD
+  // Mock data
+  const currentGasPrice = 12; // Gwei
+  const gasStatus = currentGasPrice < 20 ? 'Low' : currentGasPrice < 40 ? 'Fair' : 'High';
+  const gasStatusColor = currentGasPrice < 20 ? 'text-emerald-600' : currentGasPrice < 40 ? 'text-blue-600' : 'text-orange-600';
+  const avgConfirmation = currentGasPrice < 20 ? '<2 min' : currentGasPrice < 40 ? '3-5 min' : '5-10 min';
+
+  const recentActivity = [
+    { type: 'Send', from: '0xec9', to: '4ab...', status: 'Confirmed', icon: Send },
+    { type: 'Contract', from: '0xfc5', to: '4ab...', status: 'Pending', icon: FileText },
+    { type: 'Send', from: '0xe97', to: '4ab...', status: 'Confirmed', icon: Send },
+    { type: 'Send', from: '0xec9', to: '4ab...', status: 'Pending', icon: Send },
+  ];
+
+  const txTypes = [
+    'Swap on Uniswap',
+    'Mint NFT',
+  ];
+
+  const estimatedCost = selectedTxType === 'Swap on Uniswap' ? 2.50 : 4.20;
 
   // Initialize dark mode
   useEffect(() => {
@@ -56,227 +67,234 @@ export default function Home() {
     }
   };
 
-  const handleSetNotification = () => {
-    if (targetGasPrice) {
-      setNotificationsEnabled(true);
-      // In production, this would set up a notification service
-      alert(`We'll notify you when gas drops to ${targetGasPrice} Gwei or lower!`);
-    }
+  const handleNotify = () => {
+    alert(`We'll notify you when gas drops to ${targetGasPrice} Gwei or lower!`);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-zinc-950 dark:to-zinc-900">
+    <div className="min-h-screen bg-gray-50 dark:bg-zinc-900">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl border-b border-gray-200 dark:border-zinc-800">
-        <div className="container mx-auto px-4 sm:px-6 py-4">
+      <header className="bg-white dark:bg-zinc-950 border-b border-gray-200 dark:border-zinc-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
-            <Link href="/" className="text-xl font-bold text-zinc-900 dark:text-zinc-50">
-              GasLens
+            {/* Logo */}
+            <Link href="/" className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                <span className="text-white text-sm font-bold">G</span>
+              </div>
+              <span className="text-lg font-bold text-zinc-900 dark:text-zinc-50">GasLens</span>
             </Link>
-            <div className="flex items-center gap-3">
+
+            {/* Navigation */}
+            <nav className="hidden md:flex items-center gap-6">
+              <Link href="/" className="text-sm font-medium text-zinc-900 dark:text-zinc-50">
+                Dashboard
+              </Link>
+              <Link href="/alerts" className="text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-50 transition-colors">
+                Alerts
+              </Link>
+              <Link href="/settings" className="text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-50 transition-colors">
+                Settings
+              </Link>
               <button
                 onClick={toggleDarkMode}
-                className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-zinc-800 transition-all duration-200"
+                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
                 aria-label="Toggle dark mode"
               >
                 {darkMode ? (
-                  <Sun className="w-5 h-5 text-zinc-600 dark:text-zinc-400" />
+                  <Sun className="w-5 h-5 text-zinc-400" />
                 ) : (
-                  <Moon className="w-5 h-5 text-zinc-600 dark:text-zinc-400" />
+                  <Moon className="w-5 h-5 text-zinc-600" />
                 )}
               </button>
-              <button
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-zinc-800 transition-all duration-200"
-              >
-                <Menu className="w-6 h-6 text-zinc-900 dark:text-zinc-50" />
-              </button>
-            </div>
+              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full"></div>
+            </nav>
+
+            {/* Mobile menu button */}
+            <button
+              onClick={toggleDarkMode}
+              className="md:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
+            >
+              {darkMode ? (
+                <Sun className="w-5 h-5 text-zinc-400" />
+              ) : (
+                <Moon className="w-5 h-5 text-zinc-600" />
+              )}
+            </button>
           </div>
         </div>
       </header>
 
-      {/* Mobile Menu */}
-      {isMenuOpen && (
-        <div className="fixed inset-0 z-40 bg-white dark:bg-zinc-950 pt-20">
-          <nav className="container mx-auto px-6 py-8">
-            <div className="space-y-6">
-              <div>
-                <h3 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-3">
-                  Product
-                </h3>
-                <ul className="space-y-3">
-                  <li>
-                    <Link href="/compare" className="block text-base text-zinc-900 dark:text-zinc-50 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-                      Fee Comparison
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/directory" className="block text-base text-zinc-900 dark:text-zinc-50 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-                      Protocol Directory
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/pricing" className="block text-base text-zinc-900 dark:text-zinc-50 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-                      Pricing
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-
-              <div>
-                <h3 className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-3">
-                  Resources
-                </h3>
-                <ul className="space-y-3">
-                  <li>
-                    <Link href="/docs" className="block text-base text-zinc-900 dark:text-zinc-50 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-                      Documentation
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/docs/api" className="block text-base text-zinc-900 dark:text-zinc-50 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-                      API Reference
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/status" className="block text-base text-zinc-900 dark:text-zinc-50 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-                      System Status
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </nav>
-        </div>
-      )}
-
       {/* Main Content */}
-      <main className="container mx-auto px-4 sm:px-6 py-12 sm:py-20 max-w-4xl">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-        {/* Weather Report Hero */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-full mb-6 shadow-sm">
-            <Sparkles className="w-4 h-4 text-blue-600" />
-            <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Live Ethereum Gas Tracker</span>
-          </div>
-
-          <h1 className="text-5xl sm:text-7xl font-bold text-zinc-900 dark:text-zinc-50 mb-3">
-            Gas is {gasStatusText}
+        {/* Hero - Gas Status */}
+        <div className="text-center mb-8">
+          <h1 className="text-3xl sm:text-4xl font-bold text-zinc-900 dark:text-zinc-50 mb-2">
+            Ethereum gas is currently <span className={gasStatusColor}>{gasStatus}</span>.
           </h1>
-
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <span className="text-6xl">{gasStatusEmoji}</span>
-            <div className="text-left">
-              <p className="text-4xl font-bold text-zinc-900 dark:text-zinc-50">{currentGasPrice} <span className="text-2xl font-normal text-zinc-500">Gwei</span></p>
-              <p className="text-sm text-zinc-600 dark:text-zinc-400">{gasRecommendation}</p>
-            </div>
+          <div className="inline-flex items-center justify-center px-6 py-3 bg-emerald-100 dark:bg-emerald-900/30 rounded-full mb-3">
+            <span className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{currentGasPrice} Gwei</span>
           </div>
-
-          <p className="text-base text-zinc-600 dark:text-zinc-400 max-w-md mx-auto">
-            We monitor Ethereum network conditions 24/7 so you never overpay
+          <p className="text-sm text-zinc-600 dark:text-zinc-400">
+            Great time for transactions. Average confirmation in {avgConfirmation}.
           </p>
         </div>
 
-        {/* Search Centerpiece */}
-        <div className="mb-16">
-          <form onSubmit={handleSearch} className="relative max-w-2xl mx-auto">
-            <div className="relative">
-              <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search transaction, address, or ENS name..."
-                className="w-full pl-14 pr-6 py-5 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl text-base text-zinc-900 dark:text-zinc-50 placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-lg shadow-gray-100 dark:shadow-zinc-900/50 transition-all duration-200"
-              />
-            </div>
+        {/* Search Bar */}
+        <div className="max-w-2xl mx-auto mb-8">
+          <form onSubmit={handleSearch} className="relative">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search by Tx Hash, Address, or ENS domain..."
+              className="w-full pl-12 pr-4 py-3 bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-xl text-sm text-zinc-900 dark:text-zinc-50 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
           </form>
         </div>
 
-        {/* Feature Cards */}
-        <div className="grid sm:grid-cols-2 gap-4 mb-12">
-          {/* Savings Tracker Card */}
-          <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-200">
-            <div className="flex items-start justify-between mb-4">
-              <div>
-                <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Your Total Savings</h3>
-                <p className="text-3xl font-bold text-zinc-900 dark:text-zinc-50">${totalSavings.toLocaleString()}</p>
-              </div>
-              <div className="p-3 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl">
-                <TrendingDown className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
-              </div>
+        {/* Cards Grid */}
+        <div className="grid lg:grid-cols-3 gap-6">
+
+          {/* Recent Activity */}
+          <div className="bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-xl p-6">
+            <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-50 mb-4">Recent Activity</h2>
+            <div className="space-y-3">
+              {recentActivity.map((activity, idx) => (
+                <div key={idx} className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-gray-100 dark:bg-zinc-800 rounded-lg flex items-center justify-center">
+                      <activity.icon className="w-4 h-4 text-zinc-600 dark:text-zinc-400" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-zinc-900 dark:text-zinc-50">{activity.type}</p>
+                      <p className="text-xs text-zinc-500 dark:text-zinc-500">
+                        {activity.from} → {activity.to}
+                      </p>
+                    </div>
+                  </div>
+                  <span className={`text-xs px-2 py-1 rounded-full ${
+                    activity.status === 'Confirmed'
+                      ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400'
+                      : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
+                  }`}>
+                    {activity.status}
+                  </span>
+                </div>
+              ))}
             </div>
-            <p className="text-xs text-zinc-600 dark:text-zinc-400">Saved by waiting for optimal gas prices</p>
           </div>
 
-          {/* Gas Alerts Card */}
-          <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-200">
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex-1">
-                <h3 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-3">Set Gas Alert</h3>
-                <div className="flex gap-2">
-                  <input
-                    type="number"
-                    value={targetGasPrice}
-                    onChange={(e) => setTargetGasPrice(e.target.value)}
-                    placeholder="20"
-                    className="w-20 px-3 py-2 bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-lg text-sm text-zinc-900 dark:text-zinc-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                  <button
-                    onClick={handleSetNotification}
-                    disabled={!targetGasPrice}
-                    className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 dark:disabled:bg-zinc-700 text-white text-sm font-medium rounded-lg transition-colors disabled:cursor-not-allowed"
-                  >
-                    Notify Me
-                  </button>
+          {/* 24h Gas Trend */}
+          <div className="bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-xl p-6">
+            <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-50 mb-4">24h Gas Trend</h2>
+            <div className="relative h-40 mb-4">
+              {/* Simple mock chart */}
+              <svg className="w-full h-full" viewBox="0 0 300 100" preserveAspectRatio="none">
+                <path
+                  d="M 0,80 Q 50,20 100,40 T 200,30 T 300,60"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  className="text-blue-600 dark:text-blue-400"
+                />
+                <path
+                  d="M 0,80 Q 50,20 100,40 T 200,30 T 300,60 L 300,100 L 0,100 Z"
+                  fill="currentColor"
+                  className="text-blue-600/10 dark:text-blue-400/10"
+                />
+              </svg>
+              <div className="absolute top-1/2 right-8 -translate-y-1/2 px-3 py-1 bg-blue-600 text-white text-xs font-medium rounded-full">
+                Average: 15 Gwei
+              </div>
+            </div>
+            <Link href="/status" className="text-sm text-blue-600 dark:text-blue-400 hover:underline">
+              View Report
+            </Link>
+          </div>
+
+          {/* Estimate Cost */}
+          <div className="bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-xl p-6">
+            <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-50 mb-4">Estimate Cost</h2>
+
+            <div className="mb-4">
+              <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-2">
+                Transaction Type
+              </label>
+              <div className="relative">
+                <select
+                  value={selectedTxType}
+                  onChange={(e) => setSelectedTxType(e.target.value)}
+                  className="w-full px-3 py-2 bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-lg text-sm text-zinc-900 dark:text-zinc-50 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none cursor-pointer"
+                >
+                  {txTypes.map((type) => (
+                    <option key={type} value={type}>
+                      {type}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="mb-4">
+              <div className="flex items-baseline justify-between mb-2">
+                <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">Estimated Cost</span>
+                <div className="text-right">
+                  <p className="text-2xl font-bold text-zinc-900 dark:text-zinc-50">~${estimatedCost.toFixed(2)}</p>
+                  <p className="text-xs text-zinc-500">in ETH</p>
                 </div>
               </div>
-              <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-xl">
-                <Bell className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-              </div>
             </div>
-            <p className="text-xs text-zinc-600 dark:text-zinc-400">Get notified when gas drops to your target</p>
+
+            <Link
+              href="/compare"
+              className="text-sm text-blue-600 dark:text-blue-400 hover:underline inline-flex items-center gap-1"
+            >
+              Set Alert for lower price
+              <ArrowUpRight className="w-3 h-3" />
+            </Link>
           </div>
-        </div>
 
-        {/* Quick Actions */}
-        <div className="space-y-3">
-          <h2 className="text-sm font-semibold text-zinc-700 dark:text-zinc-300 mb-4">Quick Actions</h2>
+          {/* Gas Alert - Full Width */}
+          <div className="lg:col-span-3 bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-xl p-6">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+              <div className="flex-1">
+                <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-50 mb-2">Gas Alert</h2>
+                <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4">Set your target Gwei.</p>
 
-          <Link
-            href="/compare"
-            className="flex items-center justify-between p-4 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl hover:border-blue-500 dark:hover:border-blue-500 transition-all duration-200 group"
-          >
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-gray-100 dark:bg-zinc-800 rounded-lg group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 transition-colors">
-                <Zap className="w-5 h-5 text-zinc-600 dark:text-zinc-400 group-hover:text-blue-600 dark:group-hover:text-blue-400" />
+                <div className="max-w-md">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">Target Gas Price</span>
+                    <span className="text-sm font-bold text-zinc-900 dark:text-zinc-50">{targetGasPrice} Gwei</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="5"
+                    max="50"
+                    value={targetGasPrice}
+                    onChange={(e) => setTargetGasPrice(Number(e.target.value))}
+                    className="w-full h-2 bg-gray-200 dark:bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                  />
+                  <div className="flex justify-between text-xs text-zinc-500 mt-1">
+                    <span>5</span>
+                    <span>50</span>
+                  </div>
+                </div>
               </div>
-              <div>
-                <p className="text-sm font-medium text-zinc-900 dark:text-zinc-50">Compare Protocols</p>
-                <p className="text-xs text-zinc-600 dark:text-zinc-400">Find the cheapest way to swap</p>
-              </div>
+
+              <button
+                onClick={handleNotify}
+                className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl transition-colors flex items-center gap-2 justify-center md:self-end"
+              >
+                <Bell className="w-4 h-4" />
+                Notify me
+              </button>
             </div>
-            <ChevronRight className="w-5 h-5 text-zinc-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
-          </Link>
+          </div>
 
-          <Link
-            href="/directory"
-            className="flex items-center justify-between p-4 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl hover:border-blue-500 dark:hover:border-blue-500 transition-all duration-200 group"
-          >
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-gray-100 dark:bg-zinc-800 rounded-lg group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 transition-colors">
-                <Search className="w-5 h-5 text-zinc-600 dark:text-zinc-400 group-hover:text-blue-600 dark:group-hover:text-blue-400" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-zinc-900 dark:text-zinc-50">Protocol Directory</p>
-                <p className="text-xs text-zinc-600 dark:text-zinc-400">Browse all supported protocols</p>
-              </div>
-            </div>
-            <ChevronRight className="w-5 h-5 text-zinc-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors" />
-          </Link>
         </div>
-
       </main>
     </div>
   );
