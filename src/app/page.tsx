@@ -23,15 +23,18 @@ export default function Home() {
       setDarkMode(isDark);
       if (isDark) {
         document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
       }
     }
   }, []);
 
   // Toggle dark mode
   const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
+    const newDarkMode = !darkMode;
+    setDarkMode(newDarkMode);
     if (typeof window !== 'undefined') {
-      if (!darkMode) {
+      if (newDarkMode) {
         document.documentElement.classList.add('dark');
         localStorage.setItem('darkMode', 'true');
       } else {
@@ -57,12 +60,12 @@ export default function Home() {
       <header className="sticky top-0 z-50 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-lg border-b border-zinc-200 dark:border-zinc-800">
         <div className="container mx-auto px-4 sm:px-6 py-4">
           <div className="flex items-center justify-between">
-            <Link href="/" className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            <Link href="/" className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               GasLens
             </Link>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
               {/* Desktop buttons - hidden on mobile */}
-              <div className="hidden sm:flex items-center gap-3">
+              <div className="hidden sm:flex items-center gap-4">
                 <button className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200">
                   Connect Wallet
                 </button>
@@ -202,7 +205,7 @@ export default function Home() {
                 value={fromAmount}
                 onChange={(e) => setFromAmount(e.target.value)}
                 placeholder="0.0"
-                className="flex-1 bg-transparent text-2xl font-semibold text-zinc-900 dark:text-zinc-50 placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none"
+                className="flex-1 bg-transparent text-lg font-semibold text-zinc-900 dark:text-zinc-50 placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none"
               />
             </div>
           </div>
@@ -240,7 +243,7 @@ export default function Home() {
                 value={toAmount}
                 onChange={(e) => setToAmount(e.target.value)}
                 placeholder="0.0"
-                className="flex-1 bg-transparent text-2xl font-semibold text-zinc-900 dark:text-zinc-50 placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none"
+                className="flex-1 bg-transparent text-lg font-semibold text-zinc-900 dark:text-zinc-50 placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none"
               />
             </div>
           </div>
@@ -285,89 +288,6 @@ export default function Home() {
           )}
         </div>
 
-        {/* Footer Section */}
-        <div className="mt-16 pt-12 border-t border-zinc-200 dark:border-zinc-800">
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
-              GasLens
-            </h2>
-            <p className="text-sm text-zinc-600 dark:text-zinc-400">
-              See through the fees. Choose the cheapest path
-            </p>
-          </div>
-
-          <div className="grid grid-cols-2 gap-8 mb-8">
-            {/* Product */}
-            <div>
-              <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50 mb-3">
-                Product
-              </h3>
-              <ul className="space-y-2">
-                <li>
-                  <Link
-                    href="/compare"
-                    className="text-sm text-zinc-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                  >
-                    Fee Comparison
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/directory"
-                    className="text-sm text-zinc-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                  >
-                    Protocol Directory
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/pricing"
-                    className="text-sm text-zinc-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                  >
-                    Pricing
-                  </Link>
-                </li>
-              </ul>
-            </div>
-
-            {/* Resources */}
-            <div>
-              <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50 mb-3">
-                Resources
-              </h3>
-              <ul className="space-y-2">
-                <li>
-                  <Link
-                    href="/docs"
-                    className="text-sm text-zinc-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                  >
-                    Documentation
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/docs/api"
-                    className="text-sm text-zinc-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                  >
-                    API Reference
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/status"
-                    className="text-sm text-zinc-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                  >
-                    System Status
-                  </Link>
-                </li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="text-xs text-zinc-500 dark:text-zinc-500">
-            © 2026 GasLens. All rights reserved.
-          </div>
-        </div>
       </main>
     </div>
   );
