@@ -1,8 +1,9 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #F9FAFB;
+  --foreground: #18181B;
+  --action-blue: #3B82F6;
 }
 
 @theme inline {
@@ -10,12 +11,13 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --radius-soft: 12px;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #121212;
+    --foreground: #FAFAFA;
   }
 }
 
@@ -39,9 +41,17 @@ body {
   animation: gradient 3s ease infinite;
 }
 
-/* Smooth transitions */
-* {
-  @apply transition-colors duration-200;
+/* Smooth micro-interactions */
+button, a, input, select {
+  @apply transition-all duration-200 ease-in-out;
+}
+
+button:hover, a:hover {
+  transform: translateY(-1px);
+}
+
+button:active, a:active {
+  transform: translateY(0);
 }
 
 /* Custom scrollbar */
