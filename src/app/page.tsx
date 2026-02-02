@@ -159,7 +159,7 @@ export default function Home() {
         <div className="grid lg:grid-cols-3 gap-6">
 
           {/* Recent Activity */}
-          <div className="bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-xl p-6">
+          <div className="bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-xl p-6 card-hover cursor-pointer">
             <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-50 mb-4">Recent Activity</h2>
             <div className="space-y-3">
               {recentActivity.map((activity, idx) => (
@@ -188,7 +188,7 @@ export default function Home() {
           </div>
 
           {/* 24h Gas Trend */}
-          <div className="bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-xl p-6">
+          <div className="bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-xl p-6 card-hover cursor-pointer">
             <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-50 mb-4">24h Gas Trend</h2>
             <div className="relative h-40 mb-4">
               {/* Simple mock chart */}
@@ -216,7 +216,7 @@ export default function Home() {
           </div>
 
           {/* Estimate Cost */}
-          <div className="bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-xl p-6">
+          <div className="bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-xl p-6 card-hover cursor-pointer">
             <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-50 mb-4">Estimate Cost</h2>
 
             <div className="mb-4">
@@ -258,7 +258,7 @@ export default function Home() {
           </div>
 
           {/* Gas Alert - Full Width */}
-          <div className="lg:col-span-3 bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-xl p-6">
+          <div className="lg:col-span-3 bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-xl p-6 card-hover">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
               <div className="flex-1">
                 <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-50 mb-2">Gas Alert</h2>
@@ -286,7 +286,7 @@ export default function Home() {
 
               <button
                 onClick={handleNotify}
-                className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl transition-colors flex items-center gap-2 justify-center md:self-end"
+                className="px-6 py-3 bg-blue-600 hover:bg-blue-700 hover:shadow-lg active:scale-95 text-white font-medium rounded-xl transition-all duration-200 flex items-center gap-2 justify-center md:self-end"
               >
                 <Bell className="w-4 h-4" />
                 Notify me
