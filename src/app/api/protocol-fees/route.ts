@@ -88,7 +88,35 @@ export async function GET(request: NextRequest) {
       },
     ];
 
-    const ethPrice = 2000; // In production, fetch from CoinGecko
+    // Fetch real ETH price from our token-prices API
+    let ethPrice = 2000; // Default fallback
+    try {
+      const baseUrl = new URL(request.url).origin;
+      const priceResponse = await fetch(`${baseUrl}/api/token-prices?ids=ethereum`);
+      if (priceResponse.ok) {
+        const priceData = await priceResponse.json();
+        ethPrice = priceData.data?.ethereum?.usd || 2000;
+      }
+    } catch {
+      // Use default price on error
+    }
+
+    // Try to get real quotes from aggregators
+    let aggregatorQuotes: { protocol: string; gasEstimate: number; toAmount: string }[] = [];
+    try {
+      const baseUrl = new URL(request.url).origin;
+      const quoteResponse = await fetch(
+        `${baseUrl}/api/swap-quote?tokenIn=${tokenIn}&tokenOut=${tokenOut}&amount=${amountIn}`
+      );
+      if (quoteResponse.ok) {
+        const quoteData = await quoteResponse.json();
+        if (quoteData.data?.quotes) {
+          aggregatorQuotes = quoteData.data.quotes;
+        }
+      }
+    } catch {
+      // Continue with mock data
+    }
 
     const fees: ProtocolFee[] = protocols.map(protocol => {
       const protocolFeeAmount = (amount * protocol.baseFeeBps) / 10000;

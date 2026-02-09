@@ -1,18 +1,112 @@
-import { Check } from 'lucide-react';
+'use client';
+
+import { useState, useEffect } from 'react';
+import { Check, Loader2 } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import Link from 'next/link';
+import { useAccount, useConnect } from 'wagmi';
+import { useCryptoPayment } from '../lib/hooks/useCryptoPayment';
 
 export default function PricingPage() {
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [ethPrice, setEthPrice] = useState(2000); // Default, will be updated
+
+  const { address, isConnected } = useAccount();
+  const { connectors, connect } = useConnect();
+
+  // Fetch current ETH price
+  useEffect(() => {
+    const fetchEthPrice = async () => {
+      try {
+        const response = await fetch('/api/token-prices?symbols=ethereum');
+        const data = await response.json();
+        if (data.prices?.ethereum?.usd) {
+          setEthPrice(data.prices.ethereum.usd);
+        }
+      } catch (error) {
+        console.error('Failed to fetch ETH price:', error);
+      }
+    };
+    fetchEthPrice();
+  }, []);
+
+  const {
+    currency,
+    setCurrency,
+    payWithEth,
+    payWithUsdc,
+    loading: cryptoLoading,
+    txHash,
+    isSuccess: cryptoSuccess,
+  } = useCryptoPayment({
+    amount: 9,
+    planName: 'Pro',
+    onSuccess: async (hash) => {
+      // Verify payment on backend
+      try {
+        await fetch('/api/crypto/verify-payment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            txHash: hash,
+            walletAddress: address,
+            planName: 'Pro',
+            amount: 9,
+            currency,
+          }),
+        });
+        setShowSuccess(true);
+        setTimeout(() => setShowSuccess(false), 10000);
+      } catch (error) {
+        console.error('Payment verification failed:', error);
+      }
+    },
+    onError: (error) => {
+      console.error('Crypto payment error:', error);
+      alert(`Payment failed: ${error.message}`);
+    },
+  });
+
+  const handleCryptoPayment = async () => {
+    if (!isConnected) {
+      // Connect wallet first
+      const injectedConnector = connectors.find(c => c.id === 'injected');
+      if (injectedConnector) {
+        connect({ connector: injectedConnector });
+      }
+      return;
+    }
+
+    try {
+      if (currency === 'ETH') {
+        await payWithEth(ethPrice);
+      } else {
+        await payWithUsdc();
+      }
+    } catch (error) {
+      console.error('Payment error:', error);
+    }
+  };
+
   return (
     <div className="container mx-auto px-6 py-12">
       <div className="max-w-5xl mx-auto">
+        {/* Success Message */}
+        {showSuccess && (
+          <div className="mb-8 p-4 bg-emerald-100 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-800 rounded-xl">
+            <p className="text-emerald-800 dark:text-emerald-200 font-semibold text-center">
+              🎉 Payment successful! Welcome to GasLens Pro!
+            </p>
+          </div>
+        )}
+
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold mb-4 text-zinc-900 dark:text-zinc-50">
             Simple, Transparent Pricing
           </h1>
           <p className="text-xl text-zinc-600 dark:text-zinc-400">
-            GasLens is completely free to use. No subscription, no hidden fees.
+            Choose the plan that works for you
           </p>
         </div>
 
@@ -63,11 +157,11 @@ export default function PricingPage() {
             </Link>
           </Card>
 
-          {/* Pro (Coming Soon) */}
+          {/* Pro */}
           <Card padding="lg" className="border-2 border-blue-600 dark:border-blue-400 relative" hover>
             <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
               <span className="px-3 py-1 text-xs font-semibold rounded-full bg-blue-600 dark:bg-blue-500 text-white">
-                Coming Soon
+                Most Popular
               </span>
             </div>
 
@@ -114,12 +208,73 @@ export default function PricingPage() {
               </li>
             </ul>
 
-            <Button variant="primary" size="md" className="w-full" disabled>
-              Notify Me
+            {/* Currency Selection */}
+            <div className="mb-4">
+              <p className="text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+                Pay with crypto:
+              </p>
+              <div className="flex gap-2 mb-3">
+                <button
+                  onClick={() => setCurrency('USDC')}
+                  className={`flex-1 px-3 py-2 rounded-lg text-xs font-medium border transition-all ${
+                    currency === 'USDC'
+                      ? 'border-blue-600 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
+                      : 'border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:border-zinc-300 dark:hover:border-zinc-700'
+                  }`}
+                >
+                  USDC
+                  <div className="text-xs opacity-70">$9.00</div>
+                </button>
+                <button
+                  onClick={() => setCurrency('ETH')}
+                  className={`flex-1 px-3 py-2 rounded-lg text-xs font-medium border transition-all ${
+                    currency === 'ETH'
+                      ? 'border-blue-600 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
+                      : 'border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:border-zinc-300 dark:hover:border-zinc-700'
+                  }`}
+                >
+                  ETH
+                  <div className="text-xs opacity-70">≈{(9 / ethPrice).toFixed(5)} ETH</div>
+                </button>
+              </div>
+              {cryptoSuccess && txHash && (
+                <div className="mb-3 p-3 bg-emerald-100 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-800 rounded-lg">
+                  <p className="text-xs text-emerald-700 dark:text-emerald-300 font-medium mb-1">
+                    Payment Successful!
+                  </p>
+                  <a
+                    href={`https://etherscan.io/tx/${txHash}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-emerald-600 dark:text-emerald-400 hover:underline break-all"
+                  >
+                    View transaction →
+                  </a>
+                </div>
+              )}
+            </div>
+
+            <Button
+              variant="primary"
+              size="md"
+              className="w-full"
+              onClick={handleCryptoPayment}
+              disabled={cryptoLoading}
+            >
+              {cryptoLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  Processing...
+                </>
+              ) : isConnected ? (
+                `Pay ${currency === 'USDC' ? '$9 USDC' : `${(9 / ethPrice).toFixed(5)} ETH`}`
+              ) : (
+                'Connect Wallet to Pay'
+              )}
             </Button>
           </Card>
 
-          {/* Enterprise (Coming Soon) */}
+          {/* Enterprise */}
           <Card padding="lg" hover>
             <div className="text-center mb-6">
               <h3 className="text-2xl font-bold mb-2 text-zinc-900 dark:text-zinc-50">
@@ -164,9 +319,11 @@ export default function PricingPage() {
               </li>
             </ul>
 
-            <Button variant="outline" size="md" className="w-full">
-              Contact Sales
-            </Button>
+            <a href="mailto:sales@gaslens.com">
+              <Button variant="outline" size="md" className="w-full">
+                Contact Sales
+              </Button>
+            </a>
           </Card>
         </div>
 
@@ -178,18 +335,18 @@ export default function PricingPage() {
           <div className="space-y-6">
             <div>
               <h3 className="font-semibold text-zinc-900 dark:text-zinc-50 mb-2">
-                Is GasLens really free?
+                Can I cancel anytime?
               </h3>
               <p className="text-zinc-600 dark:text-zinc-400">
-                Yes! GasLens is completely free to use with no hidden fees or subscription required. Our mission is to make DeFi more accessible for everyone.
+                Yes! You can cancel your Pro subscription at any time. You'll have access to Pro features until the end of your billing period.
               </p>
             </div>
             <div>
               <h3 className="font-semibold text-zinc-900 dark:text-zinc-50 mb-2">
-                How do you make money?
+                What payment methods do you accept?
               </h3>
               <p className="text-zinc-600 dark:text-zinc-400">
-                Currently, we don't. GasLens is a passion project built by DeFi users. In the future, we may offer premium features for power users, but the core functionality will always be free.
+                We accept crypto payments (ETH and USDC) on Ethereum mainnet and major L2s (Optimism, Polygon, Base, Arbitrum). Fully decentralized and permissionless.
               </p>
             </div>
             <div>
@@ -202,10 +359,10 @@ export default function PricingPage() {
             </div>
             <div>
               <h3 className="font-semibold text-zinc-900 dark:text-zinc-50 mb-2">
-                When will Pro features be available?
+                What happens to my alerts if I downgrade?
               </h3>
               <p className="text-zinc-600 dark:text-zinc-400">
-                We're working on Pro features now! Sign up for our newsletter to be notified when they launch.
+                Your alerts will be preserved but you won't receive notifications. If you upgrade again, they'll be reactivated automatically.
               </p>
             </div>
           </div>

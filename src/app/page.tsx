@@ -1,13 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Search, Bell, ArrowUpRight, FileText, Send, Sun, Moon } from 'lucide-react';
+import { useState } from 'react';
+import { Search, Bell, ArrowUpRight, FileText, Send } from 'lucide-react';
 import Link from 'next/link';
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState('');
   const [targetGasPrice, setTargetGasPrice] = useState(12);
-  const [darkMode, setDarkMode] = useState(false);
   const [selectedTxType, setSelectedTxType] = useState('Swap on Uniswap');
 
   // Mock data
@@ -30,36 +29,6 @@ export default function Home() {
 
   const estimatedCost = selectedTxType === 'Swap on Uniswap' ? 2.50 : 4.20;
 
-  // Initialize dark mode
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const savedMode = localStorage.getItem('darkMode');
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      const isDark = savedMode ? savedMode === 'true' : prefersDark;
-      setDarkMode(isDark);
-      if (isDark) {
-        document.documentElement.classList.add('dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-      }
-    }
-  }, []);
-
-  // Toggle dark mode
-  const toggleDarkMode = () => {
-    const newDarkMode = !darkMode;
-    setDarkMode(newDarkMode);
-    if (typeof window !== 'undefined') {
-      if (newDarkMode) {
-        document.documentElement.classList.add('dark');
-        localStorage.setItem('darkMode', 'true');
-      } else {
-        document.documentElement.classList.remove('dark');
-        localStorage.setItem('darkMode', 'false');
-      }
-    }
-  };
-
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
@@ -72,59 +41,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-zinc-900">
-      {/* Header */}
-      <header className="bg-white dark:bg-zinc-950 border-b border-gray-200 dark:border-zinc-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            {/* Logo */}
-            <Link href="/" className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-                <span className="text-white text-sm font-bold">G</span>
-              </div>
-              <span className="text-lg font-bold text-zinc-900 dark:text-zinc-50">GasLens</span>
-            </Link>
-
-            {/* Navigation */}
-            <nav className="hidden md:flex items-center gap-6">
-              <Link href="/" className="text-sm font-medium text-zinc-900 dark:text-zinc-50">
-                Dashboard
-              </Link>
-              <Link href="/alerts" className="text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-50 transition-colors">
-                Alerts
-              </Link>
-              <Link href="/settings" className="text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-50 transition-colors">
-                Settings
-              </Link>
-              <button
-                onClick={toggleDarkMode}
-                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
-                aria-label="Toggle dark mode"
-              >
-                {darkMode ? (
-                  <Sun className="w-5 h-5 text-zinc-400" />
-                ) : (
-                  <Moon className="w-5 h-5 text-zinc-600" />
-                )}
-              </button>
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full"></div>
-            </nav>
-
-            {/* Mobile menu button */}
-            <button
-              onClick={toggleDarkMode}
-              className="md:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
-            >
-              {darkMode ? (
-                <Sun className="w-5 h-5 text-zinc-400" />
-              ) : (
-                <Moon className="w-5 h-5 text-zinc-600" />
-              )}
-            </button>
-          </div>
-        </div>
-      </header>
-
+    <div className="bg-gray-50 dark:bg-zinc-900">
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 

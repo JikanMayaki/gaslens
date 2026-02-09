@@ -1,6 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
+import { ThemeProvider } from './ThemeProvider';
 import Header from '../components/ui/layout/Header';
 import Footer from '../components/ui/layout/Footer';
 
@@ -11,12 +12,14 @@ const RainbowKit = dynamic(() => import('./RainbowKitProvider'), {
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <RainbowKit>
-      <Header />
-      <main className="min-h-screen">
-        {children}
-      </main>
-      <Footer />
-    </RainbowKit>
+    <ThemeProvider>
+      <RainbowKit>
+        <Header />
+        <main className="min-h-screen">
+          {children}
+        </main>
+        <Footer />
+      </RainbowKit>
+    </ThemeProvider>
   );
 }

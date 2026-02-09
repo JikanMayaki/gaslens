@@ -2,29 +2,39 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Bell, Plus, Trash2, Edit } from 'lucide-react';
-
-interface Alert {
-  id: string;
-  name: string;
-  targetGwei: number;
-  network: string;
-  active: boolean;
-}
+import { ArrowLeft, Bell, Plus, Trash2, X } from 'lucide-react';
+import { useAlerts } from '../lib/hooks/useAlerts';
 
 export default function AlertsPage() {
-  const [alerts, setAlerts] = useState<Alert[]>([
-    { id: '1', name: 'Low Gas Alert', targetGwei: 15, network: 'Ethereum', active: true },
-    { id: '2', name: 'Super Low', targetGwei: 10, network: 'Ethereum', active: false },
-  ]);
+  const { alerts, isLoaded, createAlert, deleteAlert, toggleAlert } = useAlerts();
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [newAlertName, setNewAlertName] = useState('');
+  const [newAlertGwei, setNewAlertGwei] = useState(15);
+  const [newAlertNetwork, setNewAlertNetwork] = useState('Ethereum');
 
-  const deleteAlert = (id: string) => {
-    setAlerts(alerts.filter(a => a.id !== id));
+  const handleCreateAlert = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newAlertName.trim()) {
+      createAlert({
+        name: newAlertName.trim(),
+        targetGwei: newAlertGwei,
+        network: newAlertNetwork,
+        active: true,
+      });
+      setNewAlertName('');
+      setNewAlertGwei(15);
+      setShowCreateForm(false);
+    }
   };
 
-  const toggleAlert = (id: string) => {
-    setAlerts(alerts.map(a => a.id === id ? { ...a, active: !a.active } : a));
-  };
+  // Show loading state while alerts are being loaded from localStorage
+  if (!isLoaded) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-zinc-900 flex items-center justify-center">
+        <div className="text-zinc-500">Loading alerts...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-zinc-900">
@@ -47,11 +57,90 @@ export default function AlertsPage() {
               Get notified when gas prices drop to your target
             </p>
           </div>
-          <button className="px-4 py-2 bg-blue-600 hover:bg-blue-700 hover:shadow-lg active:scale-95 text-white font-medium rounded-xl transition-all duration-200 flex items-center gap-2">
+          <button
+            onClick={() => setShowCreateForm(true)}
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 hover:shadow-lg active:scale-95 text-white font-medium rounded-xl transition-all duration-200 flex items-center gap-2"
+          >
             <Plus className="w-4 h-4" />
             <span className="hidden sm:inline">New Alert</span>
           </button>
         </div>
+
+        {/* Create Alert Form */}
+        {showCreateForm && (
+          <div className="bg-white dark:bg-zinc-950 border border-gray-200 dark:border-zinc-800 rounded-xl p-6 mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">Create New Alert</h2>
+              <button
+                onClick={() => setShowCreateForm(false)}
+                className="p-1 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <form onSubmit={handleCreateAlert} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                  Alert Name
+                </label>
+                <input
+                  type="text"
+                  value={newAlertName}
+                  onChange={(e) => setNewAlertName(e.target.value)}
+                  placeholder="e.g., Low Gas Alert"
+                  className="w-full px-4 py-2 bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-lg text-sm text-zinc-900 dark:text-zinc-50 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                    Target Gas Price (Gwei)
+                  </label>
+                  <input
+                    type="number"
+                    value={newAlertGwei}
+                    onChange={(e) => setNewAlertGwei(Number(e.target.value))}
+                    min="1"
+                    max="500"
+                    className="w-full px-4 py-2 bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-lg text-sm text-zinc-900 dark:text-zinc-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1">
+                    Network
+                  </label>
+                  <select
+                    value={newAlertNetwork}
+                    onChange={(e) => setNewAlertNetwork(e.target.value)}
+                    className="w-full px-4 py-2 bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-lg text-sm text-zinc-900 dark:text-zinc-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="Ethereum">Ethereum</option>
+                    <option value="Polygon">Polygon</option>
+                    <option value="Arbitrum">Arbitrum</option>
+                    <option value="Optimism">Optimism</option>
+                    <option value="Base">Base</option>
+                  </select>
+                </div>
+              </div>
+              <div className="flex justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowCreateForm(false)}
+                  className="px-4 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
+                >
+                  Create Alert
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
 
         {/* Alerts List */}
         {alerts.length === 0 ? (
@@ -61,7 +150,10 @@ export default function AlertsPage() {
             <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-6">
               Create your first gas alert to get notified when prices drop
             </p>
-            <button className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl transition-colors">
+            <button
+              onClick={() => setShowCreateForm(true)}
+              className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl transition-colors"
+            >
               Create Alert
             </button>
           </div>
@@ -93,19 +185,13 @@ export default function AlertsPage() {
                       </h3>
                       <div className="flex items-center gap-4 text-sm text-zinc-600 dark:text-zinc-400">
                         <span>Target: <strong className="text-zinc-900 dark:text-zinc-50">{alert.targetGwei} Gwei</strong></span>
-                        <span>•</span>
+                        <span>-</span>
                         <span>{alert.network}</span>
                       </div>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <button
-                      className="p-2 text-zinc-600 dark:text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
-                      aria-label="Edit alert"
-                    >
-                      <Edit className="w-4 h-4" />
-                    </button>
                     <button
                       onClick={() => deleteAlert(alert.id)}
                       className="p-2 text-zinc-600 dark:text-zinc-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
@@ -129,7 +215,7 @@ export default function AlertsPage() {
                 How alerts work
               </h3>
               <p className="text-sm text-blue-800 dark:text-blue-200">
-                We'll monitor gas prices 24/7 and send you a browser notification when the price drops to or below your target. Make sure to enable notifications in your browser settings.
+                Your alerts are saved locally in your browser. We monitor gas prices and will show you when prices drop to your target. Alerts persist across browser sessions.
               </p>
             </div>
           </div>

@@ -3,26 +3,13 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Bell, Moon, Sun, Globe, DollarSign } from 'lucide-react';
+import { useTheme } from '../providers/ThemeProvider';
 
 export default function SettingsPage() {
   const [notifications, setNotifications] = useState(true);
-  const [darkMode, setDarkMode] = useState(false);
+  const { darkMode, toggleDarkMode } = useTheme();
   const [currency, setCurrency] = useState('USD');
   const [network, setNetwork] = useState('ethereum');
-
-  const toggleDarkMode = () => {
-    const newMode = !darkMode;
-    setDarkMode(newMode);
-    if (typeof window !== 'undefined') {
-      if (newMode) {
-        document.documentElement.classList.add('dark');
-        localStorage.setItem('darkMode', 'true');
-      } else {
-        document.documentElement.classList.remove('dark');
-        localStorage.setItem('darkMode', 'false');
-      }
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-zinc-900">
